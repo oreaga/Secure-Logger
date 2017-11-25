@@ -1,14 +1,30 @@
-// A basic hello world program
+
 package src.LogRead;
+import java.util.*;
 
 public class Main {
     public static void main(String [] args) {
-        // You will need to delete all of this
-        System.out.println("Hello World. - This is logread");
+		// First go at reading command line options into a HashMap
+        HashMap<String, String> options = new HashMap<String, String>();
+        boolean isOption = true;
+        String option = "";
 
-        int argNum = 1;
         for (String arg : args) {
-            System.out.println("" + (argNum++) + " " + arg );
+            if (isOption) {
+            	option = arg;
+            	isOption = false;
+
+            } else {
+            	options.put(option, arg);
+            	isOption = true;
+
+            }
         }
+
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+		    String key = entry.getKey();
+		    Object value = entry.getValue();
+		    System.out.println(key + " " + value);
+		}
     }
 }
