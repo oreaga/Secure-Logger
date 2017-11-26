@@ -197,6 +197,7 @@ public class Main {
 
     private int appendToLog() {
         FileWriter fr;
+        StringBuilder vars;
         int checkTok = checkToken(token);
 
         if (checkTok == -1) {
@@ -208,6 +209,16 @@ public class Main {
             createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
         }
 
+        for (Map.Entry(String k, String v) e : values) {
+            if (e.getValue() == null) {
+                values.put(e.getKey(), "null");
+            }
+        }
+
+        // ********** TODO ********
+        // Figure out a good way to implement the record-id,
+        // incrementing integers might not be great
+        vars = "0," + values.get("timestamp") + "," values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee");
         fr = new FileWriter(path, true);
 
 
