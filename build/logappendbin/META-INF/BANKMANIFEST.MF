@@ -1,0 +1,2 @@
+Class-Path: logappend /java/commons-crypto-1.0.0.jar /java/commons-crypto-1.0.0-sources.jar
+Main-Class: src.LogAppend.Main

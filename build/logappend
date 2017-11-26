@@ -1,0 +1,13 @@
+#!/bin/bash
+DIR="/home/doreagan/Army_of_Two/build"
+##########################################
+# Do not input any thing above
+# The Makefile will inject the following
+# at the top of the file:
+# #!/bin/bash
+# DIR="Some directory we will run from"
+##########################################
+
+# "$@" is used to forward arguments to the application
+java -jar $DIR/logappendbin/logappend.jar "$@"
+exit $? #Exits with the exit code of the java execution

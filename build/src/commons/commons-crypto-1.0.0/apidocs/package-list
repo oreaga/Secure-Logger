@@ -1,0 +1,8 @@
+org.apache.commons.crypto
+org.apache.commons.crypto.cipher
+org.apache.commons.crypto.jna
+org.apache.commons.crypto.random
+org.apache.commons.crypto.stream
+org.apache.commons.crypto.stream.input
+org.apache.commons.crypto.stream.output
+org.apache.commons.crypto.utils

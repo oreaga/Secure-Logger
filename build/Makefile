@@ -1,13 +1,13 @@
 # Based on https://www.cs.swarthmore.edu/~newhall/unixhelp/javamakefiles.html
-# Modfied by Stephan Kostreski for UMD CMSC414 Fall2017 use 
+# Modfied by Stephan Kostreski for UMD CMSC414 Fall2017 use
 
 # You should only need to edit the block below .
 # 	JFLAGS, LIBSCLASSPATH need to know about libraries you intend to use
 # 	It will make the libraries available to both logappend and logread.
 ###############################################################################
 # Library setup
-JFLAGS = -g -classpath .:/java/[MyLibraryNameGoesHere1].jar:/java/[MyLibraryNameGoesHere2].jar
-LIBSCLASSPATH = /java/[MyLibraryNameGoesHere1].jar /java/[MyLibraryNameGoesHere2].jar
+JFLAGS = -g -classpath .:/java/commons-crypto-1.0.0.jar:/java/commons-crypto-1.0.0-sources.jar:/java
+LIBSCLASSPATH = /java/commons-crypto-1.0.0.jar /java/commons-crypto-1.0.0-sources.jar /java
 
 # Dependencies of the Logappend program.
 LOGAPPENDCLASSES = \
@@ -15,7 +15,7 @@ LOGAPPENDCLASSES = \
 
 # Dependencies of the Logread program.
 LOGREADCLASSES = \
-	src/LogRead/Main.java 
+	src/LogRead/Main.java
 ###############################################################################
 
 ##############################################
