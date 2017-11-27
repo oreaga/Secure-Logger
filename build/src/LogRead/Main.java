@@ -7,6 +7,9 @@ import java.security.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
+// problem with appending to both hashes.txt (overwrites) and 
+// logfile (throws nullpointer exception when validating)
+
 public class Main {
     public static void main(String [] args) {
         HashMap<String, String> values = new HashMap<String, String>();
@@ -23,18 +26,18 @@ public class Main {
         if (!isValidArgs(values)) {
             invalid();
         }
-        // if (!checkToken(values)) {
-        //     System.out.println("integrity violation");
-        //     System.exit(255);
-        // }
+        if (!checkToken(values)) {
+            System.out.println("integrity violation");
+            System.exit(255);
+        }
         executeCommand(values);
 
         // Debugging
-        for (Map.Entry<String, String> entry : values.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            System.out.println(key + " " + value);
-        }
+        // for (Map.Entry<String, String> entry : values.entrySet()) {
+        //     String key = entry.getKey();
+        //     Object value = entry.getValue();
+        //     System.out.println(key + " " + value);
+        // }
     }
 
     private static void invalid() {
@@ -68,10 +71,12 @@ public class Main {
         String employeeName;
 
         String logText = getLogText(values);
-        System.out.println(logText); // Debug
-        String[] lines = logText.split("\n");
+        String logTextTrimmed = logText.trim();
+        // System.out.println(logText); // Debug
+        String[] lines = logTextTrimmed.split("\n");
         int x = 1;
         for (String line : lines) {
+            // System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
             if (record.length < 5) {
                 System.out.println("Error: Logfile line has less than 6 fields"); // Debug
@@ -86,41 +91,41 @@ public class Main {
             if (record.length == 6) {
                 employeeName = record[5];
             } else {
-                employeeName = "";
+                employeeName = "null";
             }
 
             // System.out.println("guestName: " + guestName); // Debug
             // System.out.println("employeeName: " + employeeName); // Debug
 
             // will an absence of a field be null or empty string??
-            if (guestName.equals("") && !employeeName.equals("")) {
-                if (arriveOrLeave.equals("A") && !roomID.equals("")) {
+            if (guestName.equals("null") && !employeeName.equals("null")) {
+                if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
                     // employee entered a room
                     employees.put(employeeName, Integer.parseInt(roomID));
-                } else if (arriveOrLeave.equals("A") && roomID.equals("")) {
+                } else if (arriveOrLeave.equals("A") && roomID.equals("null")) {
                     // employee entered the gallery but not a specific room
                     employees.put(employeeName, -1);
-                } else if (arriveOrLeave.equals("L") && !roomID.equals("")) {
+                } else if (arriveOrLeave.equals("L") && !roomID.equals("null")) {
                     // employee left a room
                     employees.put(employeeName, -1);
-                } else if (arriveOrLeave.equals("L") && roomID.equals("")) {
+                } else if (arriveOrLeave.equals("L") && roomID.equals("null")) {
                     // employee has left the gallery
                     employees.remove(employeeName);
                 } else {
                     System.out.println("Every line should either have either A or L"); // Debug
                     invalid();    
                 }
-            } else if (!guestName.equals("") && employeeName.equals("")) {
-                if (arriveOrLeave.equals("A") && !roomID.equals("")) {
+            } else if (!guestName.equals("") && employeeName.equals("null")) {
+                if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
                     // guest entered a room
                     guests.put(guestName, Integer.parseInt(roomID));
-                } else if (arriveOrLeave.equals("A") && roomID.equals("")) {
+                } else if (arriveOrLeave.equals("A") && roomID.equals("null")) {
                     // guest entered the gallery but not a specific room
                     guests.put(guestName, -1);
-                } else if (arriveOrLeave.equals("L") && !roomID.equals("")) {
+                } else if (arriveOrLeave.equals("L") && !roomID.equals("null")) {
                     // guest left a room
                     guests.put(guestName, -1);
-                } else if (arriveOrLeave.equals("L") && roomID.equals("")) {
+                } else if (arriveOrLeave.equals("L") && roomID.equals("null")) {
                     // guest has left the gallery
                     guests.remove(guestName);
                 } else {
@@ -140,12 +145,7 @@ public class Main {
             Object room = entry.getValue();
             employeeNames.add(name);
         }
-        Collections.sort(employeeNames, new Comparator<String>() {
-            @Override
-            public int compare(String s1, String s2) {
-                return s1.compareToIgnoreCase(s2);
-            }
-        });
+        Collections.sort(employeeNames); // TODO check that this orders according to ASCII (like in Oracle)
         int count = 1;
         int size = employeeNames.size();
         for (String s : employeeNames) {
@@ -164,7 +164,7 @@ public class Main {
             Object room = entry.getValue();
             guestNames.add(name);
         }
-        Collections.sort(guestNames, new Comparator<String>() {
+        Collections.sort(guestNames, new Comparator<String>() { // If the above orders properly then switch this too
             @Override
             public int compare(String s1, String s2) {
                 return s1.compareToIgnoreCase(s2);
