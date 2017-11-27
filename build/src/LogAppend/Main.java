@@ -1,8 +1,7 @@
 // A basic hello world program
 package src.LogAppend;
 import java.security.*;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
+import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.util.*;
 import java.io.*;
@@ -134,7 +133,7 @@ public class Main {
         BufferedReader br;
         String test;
         String p = values.get("path");
-        String recLine;
+        String recLine = null;
         if (p == null) {
             System.out.println("Path not supplied to commandline");
             System.exit(255);
@@ -149,8 +148,14 @@ public class Main {
             return null;
         }
 
-        while ((test = br.readLine()) != null) {
-            recLine = test;
+        try {
+            while ((test = br.readLine()) != null) {
+                recLine = test;
+            }
+        }
+        catch (IOException e) {
+            System.out.println("Error reading last line of log");
+            System.exit(255);
         }
 
         return recLine;
@@ -220,95 +225,212 @@ public class Main {
     // file specified.
     // Returns 1 if correct, 0 if logfile doesn't exist, and -1 if incorrect
     private int checkToken() {
-        FileReader in = new FileReader("hashes.txt");
-        BufferedReader buf = new BufferedReader(in);
+        FileReader in = null;
+        BufferedReader buf = null;
         String[] fields;
-        String testHash = BCrypt.hashpw(values.get("token"), BCrypt.gensalt(12));
-        String text;
+        String text = null;
 
+        try {
+            in = new FileReader("hashes.txt");
+            buf = new BufferedReader(in);
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not open hashes.txt to check token");
+            System.exit(255);
+        }
 
-        while ((text = buf.readLine()) != null) {
-            fields = text.split(":");
+        try {
+            while ((text = buf.readLine()) != null) {
+                fields = text.split(":");
 
-            if (values.get("path").equals(fields[0])) {
-                System.out.println("Found the right log file");
+                if (values.get("path").equals(fields[0])) {
+                    System.out.println("Found the right log file");
 
-                if (BCrypt.checkpw(testHash, fields[0])) {
-                    System.out.println("Hashes match");
-                    return 0;
-                }
-                else {
-                    System.out.println("Hashes do not match");
-                    return 0;
+                    if (BCrypt.checkpw(values.get("token"), fields[0])) {
+                        System.out.println("Hashes match");
+                        return 0;
+                    }
+                    else {
+                        System.out.println("Hashes do not match");
+                        return 0;
+                    }
                 }
             }
+        }
+        catch (IOException e) {
+            System.out.println("Error reading from hash file");
         }
 
         return 0;
     }
 
     private static void createLog(String log, String hash) {
-        FileWriter fw;
+        FileWriter fw = null;
         try {
             fw = new FileWriter("hashes.txt", true);
         }
         catch (IOException e) {
             System.out.println("Error opening file hashes.txt");
         }
-        fw.write(log + ":" + hash + "\n");
+
+        try {
+            fw.write(log + ":" + hash + "\n");
+        }
+        catch (IOException e) {
+            System.out.println("Could not write to hash file");
+            System.exit(255);
+        }
     }
 
     private static void createKey(String logfile) {
-        FileOutputStream fsKey = new FileOutputStream(logfile + ".key");
-        FileOutputStream fsIV = new FileOutputStream(logfile + ".iv");
-        KeyGenerator keygen = KeyGenerator.getInstance("AES");
+        FileOutputStream fsKey = null;
+        FileOutputStream fsIV = null;
+        KeyGenerator keygen = null;
+        try {
+            keygen = KeyGenerator.getInstance("AES");
+        }
+        catch (NoSuchAlgorithmException e) {
+            System.out.println("Failure at keygen");
+            System.exit(255);
+        }
         keygen.init(128);
         byte[] key = keygen.generateKey().getEncoded();
         byte[] iv = new byte[16];
         SecureRandom secRandom = new SecureRandom();
         secRandom.nextBytes(iv);
-        fsKey.write(key);
-        fsIV.write(iv);
+
+        try {
+            fsKey = new FileOutputStream(logfile + ".key");
+            fsIV = new FileOutputStream(logfile + ".iv");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not find key or iv file");
+            System.exit(255);
+        }
+
+        try {
+            fsKey.write(key);
+            fsIV.write(iv);
+        }
+        catch (IOException e) {
+            System.out.println("Could not write to key or iv file");
+        }
     }
 
     private static byte[] getKey(String logfile) {
         byte[] key = new byte[128];
-        FileInputStream fs = new FileInputStream(logfile + ".key");
-        fs.read(key);
+        FileInputStream fs = null;
+
+        try {
+            fs = new FileInputStream(logfile + ".key");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not find key file");
+            System.exit(255);
+        }
+
+        try {
+            fs.read(key);
+        }
+        catch (IOException e) {
+            System.out.println("Could not read key file");
+            System.exit(255);
+        }
         return key;
     }
 
     private static byte[] getIV(String logfile) {
         byte[] iv = new byte[16];
-        FileInputStream fs = new FileInputStream(logfile + ".iv");
-        fs.read(iv);
+        FileInputStream fs = null;
+        try {
+            fs = new FileInputStream(logfile + ".iv");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not find iv file");
+            System.exit(255);
+        }
+
+        try {
+            fs.read(iv);
+        }
+        catch (IOException e) {
+            System.out.println("Could not read iv file");
+            System.exit(255);
+        }
         return iv;
     }
 
     private static byte[] encrypt(String message, String path) {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        }
+        catch (Exception e) {
+            System.out.println("No support for padding in encrypt");
+            System.exit(255);
+        }
         byte[] key = getKey(path);
         byte[] iv = getIV(path);
         SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(cipher.ENCRYPT_MODE, skeySpec, ivSpec);
-        return cipher.doFinal(message.getBytes());
+        try {
+            cipher.init(cipher.ENCRYPT_MODE, skeySpec, ivSpec);
+        }
+        catch (Exception e) {
+            System.out.println("Invalid parameters for encryption");
+            System.exit(255);
+        }
+        byte[] encrypted = new byte[cipher.getOutputSize(message.getBytes().length)];
+
+        try {
+            encrypted = cipher.doFinal(message.getBytes());
+        }
+        catch (Exception e) {
+            System.out.println("Bad block size for encryption");
+            System.exit(255);
+        }
+        return encrypted;
     }
 
     private static byte[] decrypt(String encMessage, String path) {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        }
+        catch (Exception e) {
+            System.out.println("Could not create cipher for decryption");
+        }
         byte[] key = getKey(path);
         byte[] iv = getIV(path);
         SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
-        return cipher.doFinal(encMessage.getBytes());
+        try {
+            cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
+        }
+        catch (Exception e) {
+            System.out.println("Invalid parameters for decryption");
+            System.exit(255);
+        }
+        byte[] decrypted = new byte[cipher.getOutputSize(encMessage.getBytes().length)];
+
+        try {
+            decrypted = cipher.doFinal(encMessage.getBytes());
+        }
+        catch (Exception e) {
+            System.out.println("Bad block size for decryption");
+            System.exit(255);
+        }
+        return decrypted;
+    }
+
+    private String getNextRecNum(String path) {
+        return "Filler next record number";
     }
 
     private int appendToLog() {
-        FileWriter fr;
-        StringBuilder vars;
-        String encVars;
+        FileWriter fr = null;
+        String vars;
+        byte[] encVars;
         String recNum;
         String token = values.get("token");
         String path = values.get("path");
@@ -326,7 +448,7 @@ public class Main {
             newLog = true;
         }
 
-        for (Map.Entry<String, String> e : values) {
+        for (Map.Entry<String, String> e : values.entrySet()) {
             if (e.getValue() == null) {
                 values.put(e.getKey(), "null");
             }
@@ -344,7 +466,7 @@ public class Main {
             recNum = getNextRecNum(path);
         }
         vars = BCrypt.hashpw(recNum, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee");
-        encVars = encrypt(vars);
+        encVars = encrypt(vars, path);
         try {
             fr = new FileWriter(path, true);
         }
@@ -352,8 +474,14 @@ public class Main {
             System.out.println("Error opening log");
             System.exit(255);
         }
-        fr.write(recNum + ":" + encVars + "\n");
 
+        try {
+            fr.write(recNum + ":" + encVars + "\n");
+        }
+        catch (IOException e) {
+            System.out.println("Error appending to log");
+            System.exit(255);
+        }
 
 
 

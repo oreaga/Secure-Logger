@@ -1,1 +1,2 @@
 src/LogAppend/Main.class
+org/mindrot/jbcrypt/BCrypt.class
