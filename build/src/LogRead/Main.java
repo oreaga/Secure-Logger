@@ -1,9 +1,7 @@
 
 package src.LogRead;
 import java.util.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class Main {
@@ -41,7 +39,35 @@ public class Main {
         System.exit(255);
     }
 
-    private static int printCurrentState() {
+    private static int printCurrentState(HashMap<String, String> values) {
+        // employees hash with name as key and current roomID as the value
+        // guests hash with name as key and current roomID as the value
+        HashMap<String, Integer> employees = new HashMap<String, Integer>();
+        HashMap<String, Integer> guests = new HashMap<String, Integer>();
+
+        FileReader in = null;
+        BufferedReader buf = null;
+        String line = null;
+
+        try {
+            in = new FileReader(values.get("logfile"));
+            buf = new BufferedReader(in);
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not open hashes.txt to check token");
+            System.exit(255);
+        }
+
+        try {
+            while ((line = buf.readLine()) != null) {
+                // record = decrypt(line);
+                // store stuff about record
+            }
+        }
+        catch (IOException e) {
+            System.out.println("Error reading from hash file");
+        }
+
         return 0;
     }
 
@@ -79,8 +105,15 @@ public class Main {
     }
 
     private static void executeCommand(HashMap<String, String> values) {
-        // first open file specified by logfile by decrypting with token
-        // next check if we're doing -R, -S or -T and call the appropriate function
+        if (values.get("-S") != null) {
+            printCurrentState(values);
+        } else if (values.get("-R") != null) {
+            // listRoomsEntered(values);
+        } else if (values.get("-T") != null) {
+            //printTotalTime(values);
+        } else {
+            System.out.println("Shouldn't get here");
+        }
     }
 
     // makes sure command is valid by making checks that could not be made 
