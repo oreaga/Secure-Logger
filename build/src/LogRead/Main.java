@@ -63,6 +63,7 @@ public class Main {
         // <record-id>,<timestamp>,<A or L>,<room-id>,<guest-name>,<employee-name>
         HashMap<String, Integer> employees = new HashMap<String, Integer>();
         HashMap<String, Integer> guests = new HashMap<String, Integer>();
+        TreeMap<Integer, ArrayList<String>> rooms = new TreeMap<Integer, ArrayList<String>>();
         String recordID;
         String timestamp;
         String arriveOrLeave;
@@ -72,13 +73,13 @@ public class Main {
 
         String logText = getLogText(values);
         String logTextTrimmed = logText.trim();
-        // System.out.println(logText); // Debug
+        System.out.println(logText); // Debug
         String[] lines = logTextTrimmed.split("\n");
         int x = 1;
         for (String line : lines) {
             // System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
-            if (record.length < 5) {
+            if (record.length < 6) {
                 System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
@@ -86,13 +87,7 @@ public class Main {
             arriveOrLeave = record[2];
             roomID = record[3];
             guestName = record[4];
-
-            // since employee name is last it will not be given "" by split
-            if (record.length == 6) {
-                employeeName = record[5];
-            } else {
-                employeeName = "null";
-            }
+            employeeName = record[5];
 
             // System.out.println("guestName: " + guestName); // Debug
             // System.out.println("employeeName: " + employeeName); // Debug
@@ -142,8 +137,15 @@ public class Main {
         ArrayList<String> employeeNames = new ArrayList<String>();
         for (Map.Entry<String, Integer> entry : employees.entrySet()) {
             String name = entry.getKey();
-            Object room = entry.getValue();
+            int room = entry.getValue();
             employeeNames.add(name);
+
+            if (room >= 0) {
+                // also associate room number and present employees while we're at it
+                if (rooms.putIfAbsent(room, new ArrayList<String>(Arrays.asList(name))) != null) {
+                    rooms.get(room).add(name);
+                }
+            }
         }
         Collections.sort(employeeNames); // TODO check that this orders according to ASCII (like in Oracle)
         int count = 1;
@@ -161,8 +163,15 @@ public class Main {
         ArrayList<String> guestNames = new ArrayList<String>();
         for (Map.Entry<String, Integer> entry : guests.entrySet()) {
             String name = entry.getKey();
-            Object room = entry.getValue();
+            int room = entry.getValue();
             guestNames.add(name);
+
+            if (room >= 0) {
+                // also associate room number and present guests while we're at it
+                if (rooms.putIfAbsent(room, new ArrayList<String>(Arrays.asList(name))) != null) {
+                    rooms.get(room).add(name);
+                }
+            }
         }
         Collections.sort(guestNames, new Comparator<String>() { // If the above orders properly then switch this too
             @Override
@@ -179,6 +188,24 @@ public class Main {
                 System.out.print(s + "\n");
             }
             count++;
+        }
+
+        for (Map.Entry<Integer, ArrayList<String>> entry : rooms.entrySet()) {
+            int room = entry.getKey();
+            ArrayList<String> names = entry.getValue();
+            Collections.sort(names);
+            System.out.print(room + ": ");
+
+            count = 1;
+            size = names.size();
+            for (String name : names) {
+                if (count < size) {
+                    System.out.print(name + ",");
+                } else {
+                    System.out.print(name + "\n");
+                }
+                count++;
+            }
         }
 
         return 0;
@@ -218,7 +245,7 @@ public class Main {
     }
 
     // makes sure command is valid by making checks that could not be made 
-    // during initial reading of args
+    // during initial reading of args (in readArgs())
     private static boolean isValidArgs(HashMap<String, String> values) {
         // always must supply a token
         if (values.get("-K") == null) {
