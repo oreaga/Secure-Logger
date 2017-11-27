@@ -10,7 +10,7 @@ import org.mindrot.jbcrypt.BCrypt;
 public class Main {
     private HashMap<String, String> values;
     private String logText;
-    private boolean arrival;
+    private boolean arrive;
     private boolean leave;
 
     public void Main() {
@@ -105,7 +105,7 @@ public class Main {
             System.out.println("Please specify only one of A or L");
             System.exit(255);
         }
-        else if (m.arrival == true) {
+        else if (m.arrive == true) {
             m.values.put("arrival", "A");
         }
         else if (m.leave == true) {
@@ -304,23 +304,26 @@ public class Main {
         return 0;
     }
 
-    private String checkValid() {
+    private String checkValid() throws IOException {
         String al;
-        Integer currStamp;
-        Integer prevStamp;
+        Integer currStamp = null;
+        Integer prevStamp = null;
+        Integer stamp;
         String currRoom = null;
-        String newRoom = values.get("room")
+        String newRoom = values.get("room");
         String ge = null;
-        int geIndex = null;
+        Integer geIndex = null;
         boolean free = true;
         StringReader sr = null;
         BufferedReader br = null;
         String currLine = null;
         String prevLine = null;
+        String[] currFields = null;
+        String[] prevFields = null;
         boolean inGallery = false;
         boolean valid = false;
         String retString = null;
-        int i = 2;
+        Integer i = 2;
 
         // Determine whether A or L and guest or employee
         al = values.get("arrival");
@@ -342,7 +345,13 @@ public class Main {
         else {
             sr = new StringReader(logText);
             br = new BufferedReader(sr);
-            prevLine = br.readLine();
+
+            try {
+                prevLine = br.readLine();
+            }
+            catch (IOException e) {
+                System.out.println("Error reading first line of file");
+            }
         }
 
         while ((currLine = br.readLine()) != null) {
@@ -350,7 +359,7 @@ public class Main {
             currFields = currLine.split(",");
 
             // Ensure log has not been modified
-            checkHash(i, prevFields[0], currFields[0])
+            checkHash(i, prevFields[0], currFields[0]);
 
             // Ensure timestamp is being incremented
             try {
@@ -390,7 +399,7 @@ public class Main {
         }
 
         // Check that record to be appended is consistent with state
-        if ((inGallery == false && newRoom.equals("0") && al = "A") ||
+        if ((stamp > currStamp) && (inGallery == false && newRoom.equals("0") && al.equals("A")) ||
             (inGallery == true && free == true && al == "A" && !(newRoom.equals("0"))) ||
             (inGallery == true && free == false && al == "L" && newRoom.equals(currRoom)) ||
             (inGallery == true && free == true && al == "L" && newRoom.equals("0"))
@@ -399,14 +408,14 @@ public class Main {
             valid = true;
         }
 
-        if (valid)
-            retString == i.toString() + prevFields[1];
+        if (valid) {
+            retString = i.toString() + prevFields[1];
         }
 
         return retString;
     }
 
-    private void checkHash(int lineNum, String prevHash, String currHash) {
+    private void checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
         if (!(BCrypt.checkpw(num + prevHash, currHash))) {
             System.out.println("Hashes do not match, log modified illegally");
@@ -625,18 +634,19 @@ public class Main {
 
     private String getLogText() {
         FileInputStream fs = null;
-        byte[] encText;
+        byte[] encText = null;
+        String plainText = null;
         String path = values.get("path");
         try {
             fs = new FileInputStream(path);
+            encText = new byte[fs.available()];
+            fs.read(encText);
         }
         catch (Exception e) {
             System.out.println("Unable to open logfile to get text");
             System.exit(255);
         }
 
-        enctext = new byte[fs.available()];
-        fs.read(encText);
         plainText = decrypt(encText, path);
         return plainText;
     }
@@ -665,7 +675,13 @@ public class Main {
 
         if (!newLog) {
             logText = getLogText();
-            validText = checkValid();
+            try {
+                validText = checkValid();
+            }
+            catch (IOException e) {
+                System.out.println("IO error while checking log validity");
+                System.exit(255);
+            }
             if (validText == null) {
                 System.out.println("Record not consistent with log state");
                 System.exit(255);
@@ -692,9 +708,10 @@ public class Main {
         else {
             recID = validText;
         }
-        vars = BCrypt.hashpw(recId, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
+        vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
+        logText = logText + vars;
         try {
-            fr = new FileWriter(path, true);
+            fr = new FileWriter(path);
         }
         catch (IOException e) {
             System.out.println("Error opening log");
@@ -702,14 +719,12 @@ public class Main {
         }
 
         try {
-            fr.write(recNum + ":" + encVars + "\n");
+            fr.write(logText);
         }
         catch (IOException e) {
             System.out.println("Error appending to log");
             System.exit(255);
         }
-
-
 
         return 0;
     }
