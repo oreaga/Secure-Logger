@@ -67,8 +67,7 @@ public class Main {
                     // System.out.println("Found: " + foundLogfile + " Current: " + currentLogfile); // Debug
                     if (BCrypt.checkpw(token, hash)) {
                         System.out.println("Match");
-                    } else {
-                        System.out.println("No match");
+                        result = true;
                     }
                 }
             }
