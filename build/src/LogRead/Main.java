@@ -1,6 +1,10 @@
 
 package src.LogRead;
 import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class Main {
     public static void main(String [] args) {
@@ -43,10 +47,36 @@ public class Main {
 
     private static boolean checkToken(HashMap<String, String> values) {
         String token = values.get("-K");
-        String logfile = values.get("logfile");
+        String currentLogfile = values.get("logfile");
+        BufferedReader br = null;
+        FileReader fr = null;
+        boolean result = false;
 
+        try {
+            fr = new FileReader("hashes.txt");
+            br = new BufferedReader(fr);
+
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                String[] lineArr = line.split(":", 2);
+                String foundLogfile = lineArr[0];
+                String hash = lineArr[1];
+
+                if (foundLogfile.equals(currentLogfile)) {
+                    // System.out.println("Found: " + foundLogfile + " Current: " + currentLogfile); // Debug
+                    if (BCrypt.checkpw(token, hash)) {
+                        System.out.println("Match");
+                    } else {
+                        System.out.println("No match");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // check against hashes.txt for specified logfile
-        return true;
+        return result;
     }
 
     private static void executeCommand(HashMap<String, String> values) {
