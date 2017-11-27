@@ -1,10 +1,12 @@
 // A basic hello world program
 package src.LogAppend;
-import org.apache.commons.crypto.cipher.*;
 import java.security.*;
-import javax.Cipher;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.*;
 import java.util.*;
-import org.mindrot.jbcrypt.Bcrypt;
+import java.io.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class Main {
     private HashMap<String, String> values;
@@ -36,7 +38,7 @@ public class Main {
             if (args[i].equals("-G")) {
                 error = error + m.processGuest(args[i + i]);
             }
-            if (m.guest == null && m.employee == null) {
+            if (m.values.get("guest") == null && m.values.get("employee") == null) {
                 System.out.println("Please provide employee or guest name");
                 System.exit(255);
             }
@@ -74,7 +76,7 @@ public class Main {
 
     // Method for checking time constraints
     private int processTime(String time) {
-        int t = 0;
+        Integer t = 0;
         System.out.println("Checking the time");
         try {
             t = Integer.parseInt(time);
@@ -112,7 +114,7 @@ public class Main {
             return 1;
         }
         else {
-            employee = e;
+            values.put("employee", e);
         }
 
         return 0;
@@ -123,7 +125,7 @@ public class Main {
             return 1;
         }
         else {
-            guest = g;
+            values.put("guest", g);
         }
         return 0;
     }
@@ -131,21 +133,23 @@ public class Main {
         FileReader fr;
         BufferedReader br;
         String test;
-        String recLine;if (path == null) {
+        String p = values.get("path");
+        String recLine;
+        if (p == null) {
             System.out.println("Path not supplied to commandline");
             System.exit(255);
         }
 
         try {
-            fr = new FileReader(path);
+            fr = new FileReader(p);
             br = new BufferedReader(fr);
         }
         catch (IOException e) {
             System.out.println("No prior arrivals");
-            return 0;
+            return null;
         }
 
-        while ((test = br.readline()) != null) {
+        while ((test = br.readLine()) != null) {
             recLine = test;
         }
 
@@ -153,6 +157,7 @@ public class Main {
     }
 
     private int processArrival() {
+        /*
         FileReader fr;
         BufferedReader br;
         String last = null;
@@ -175,14 +180,14 @@ public class Main {
             return 0;
         }
 
-        last = br.readline();
+        last = br.readLine();
         if (last == null) {
             return 0;
         }
-        while ((last = br.readline()) != null) {
+        while ((last = br.readLine()) != null) {
 
         }
-
+        */
 
         return 0;
     }
@@ -193,19 +198,20 @@ public class Main {
 
     private int processRoom(String r) {
         System.out.println("Checking Room");
+        Integer room = -1;
         try {
-            r = Integer.parseInt(r);
+            room = Integer.parseInt(r);
         }
         catch (Exception e) {
             System.out.println("Error parsing integer room");
             System.exit(255);
         }
 
-        if (r < 0 || r > 1073741823) {
+        if (room < 0 || room > 1073741823) {
             return 1;
         }
         else {
-            values.put("room", r);
+            values.put("room", room.toString());
         }
         return 0;
     }
@@ -217,13 +223,14 @@ public class Main {
         FileReader in = new FileReader("hashes.txt");
         BufferedReader buf = new BufferedReader(in);
         String[] fields;
-        String testHash = BCrypt.hashpw(token, BCrypt.gensalt(12));
+        String testHash = BCrypt.hashpw(values.get("token"), BCrypt.gensalt(12));
+        String text;
 
 
-        while ((text = buf.readline()) != null) {
+        while ((text = buf.readLine()) != null) {
             fields = text.split(":");
 
-            if (path.equals(fields[0])) {
+            if (values.get("path").equals(fields[0])) {
                 System.out.println("Found the right log file");
 
                 if (BCrypt.checkpw(testHash, fields[0])) {
@@ -252,30 +259,60 @@ public class Main {
     }
 
     private static void createKey(String logfile) {
-        FileWriter fr = new FileWriter(logfile + ".key");
+        FileOutputStream fsKey = new FileOutputStream(logfile + ".key");
+        FileOutputStream fsIV = new FileOutputStream(logfile + ".iv");
         KeyGenerator keygen = KeyGenerator.getInstance("AES");
         keygen.init(128);
         byte[] key = keygen.generateKey().getEncoded();
-        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+        byte[] iv = new byte[16];
+        SecureRandom secRandom = new SecureRandom();
+        secRandom.nextBytes(iv);
+        fsKey.write(key);
+        fsIV.write(iv);
     }
 
-    private static String encrypt(String message) {
-        private Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-
-
+    private static byte[] getKey(String logfile) {
+        byte[] key = new byte[128];
+        FileInputStream fs = new FileInputStream(logfile + ".key");
+        fs.read(key);
+        return key;
     }
 
-    private static String decrypt(String encMessage) {
-        private Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        return "Filler Plaintext";
+    private static byte[] getIV(String logfile) {
+        byte[] iv = new byte[16];
+        FileInputStream fs = new FileInputStream(logfile + ".iv");
+        fs.read(iv);
+        return iv;
+    }
+
+    private static byte[] encrypt(String message, String path) {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte[] key = getKey(path);
+        byte[] iv = getIV(path);
+        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        cipher.init(cipher.ENCRYPT_MODE, skeySpec, ivSpec);
+        return cipher.doFinal(message.getBytes());
+    }
+
+    private static byte[] decrypt(String encMessage, String path) {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte[] key = getKey(path);
+        byte[] iv = getIV(path);
+        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
+        return cipher.doFinal(encMessage.getBytes());
     }
 
     private int appendToLog() {
         FileWriter fr;
         StringBuilder vars;
         String encVars;
-        int recordNum;
-        int checkTok = checkToken(token);
+        String recNum;
+        String token = values.get("token");
+        String path = values.get("path");
+        int checkTok = checkToken();
         boolean newLog = false;
 
         if (checkTok == -1) {
@@ -285,11 +322,11 @@ public class Main {
         else if (checkTok == 0) {
             System.out.println("Creating new log");
             createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
-            createKey(path);
+            createKey(path.split("/")[path.length() - 1]);
             newLog = true;
         }
 
-        for (Map.Entry(String k, String v) e : values) {
+        for (Map.Entry<String, String> e : values) {
             if (e.getValue() == null) {
                 values.put(e.getKey(), "null");
             }

@@ -1,2 +1,2 @@
-Class-Path: logread /java/commons-crypto-1.0.0.jar /java/commons-crypto-1.0.0-sources.jar
+Class-Path: logread /java/commons-crypto-1.0.0.jar /java/commons-crypto-1.0.0-sources.jar /java
 Main-Class: src.LogRead.Main
