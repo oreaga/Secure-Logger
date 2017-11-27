@@ -7,16 +7,6 @@ import java.util.*;
 import org.mindrot.jbcrypt.Bcrypt;
 
 public class Main {
-    private Integer timestamp = null;
-    private String token = null;
-    private String employee = null;
-    private String guest = null;
-    private Boolean arrival = null;
-    private Integer room = null;
-    private String path = null;
-    private Integer recentID = null;
-    private String logText = null;
-    private Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     private HashMap<String, String> values;
 
     public void Main() {
@@ -36,6 +26,8 @@ public class Main {
         int i;
         int error = 0;
 
+        // Get the employee or guest name
+        // If one not provided fail with 255
         System.out.println("Getting name");
         for (i = 0; i < args.length; i++) {
             if (args[i].equals("-E")) {
@@ -58,15 +50,18 @@ public class Main {
             if (args[i].equals("-K")) {
                 error = error + m.processToken(args[i+1]);
             }
+            if (args[i].equals("-R")) {
+                error = error + m.processRoom(args[i + 1]);
+            }
+
+        for (i = 0; i < args.length; i++) {
             if (args[i].equals("-A")) {
                 error = error + m.processArrival();
             }
             if (args[i].equals("-L")) {
                 error = error + m.processLeave();
             }
-            if (args[i].equals("-R")) {
-                error = error + m.processRoom(args[i + 1]);
-            }
+        }
 
         if (error != 0) {
             System.exit(255);
@@ -132,8 +127,63 @@ public class Main {
         }
         return 0;
     }
+    private String getLastLine(String path) {
+        FileReader fr;
+        BufferedReader br;
+        String test;
+        String recLine;if (path == null) {
+            System.out.println("Path not supplied to commandline");
+            System.exit(255);
+        }
+
+        try {
+            fr = new FileReader(path);
+            br = new BufferedReader(fr);
+        }
+        catch (IOException e) {
+            System.out.println("No prior arrivals");
+            return 0;
+        }
+
+        while ((test = br.readline()) != null) {
+            recLine = test;
+        }
+
+        return recLine;
+    }
 
     private int processArrival() {
+        FileReader fr;
+        BufferedReader br;
+        String last = null;
+        String prevRec = null;
+        boolean entGallery = false;
+        boolean left = true;
+
+
+        if (path == null) {
+            System.out.println("Path not supplied to commandline");
+            System.exit(255);
+        }
+
+        try {
+            fr = new FileReader(path);
+            br = new BufferedReader(fr);
+        }
+        catch (IOException e) {
+            System.out.println("No prior arrivals");
+            return 0;
+        }
+
+        last = br.readline();
+        if (last == null) {
+            return 0;
+        }
+        while ((last = br.readline()) != null) {
+
+        }
+
+
         return 0;
     }
 
@@ -144,11 +194,18 @@ public class Main {
     private int processRoom(String r) {
         System.out.println("Checking Room");
         try {
-            room = Integer.parseInt(r);
+            r = Integer.parseInt(r);
         }
         catch (Exception e) {
             System.out.println("Error parsing integer room");
             System.exit(255);
+        }
+
+        if (r < 0 || r > 1073741823) {
+            return 1;
+        }
+        else {
+            values.put("room", r);
         }
         return 0;
     }
@@ -191,14 +248,35 @@ public class Main {
         catch (IOException e) {
             System.out.println("Error opening file hashes.txt");
         }
+        fw.write(log + ":" + hash + "\n");
+    }
 
-        fw.write(log + hash + "\n");
+    private static void createKey(String logfile) {
+        FileWriter fr = new FileWriter(logfile + ".key");
+        KeyGenerator keygen = KeyGenerator.getInstance("AES");
+        keygen.init(128);
+        byte[] key = keygen.generateKey().getEncoded();
+        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+    }
+
+    private static String encrypt(String message) {
+        private Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+
+    }
+
+    private static String decrypt(String encMessage) {
+        private Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        return "Filler Plaintext";
     }
 
     private int appendToLog() {
         FileWriter fr;
         StringBuilder vars;
+        String encVars;
+        int recordNum;
         int checkTok = checkToken(token);
+        boolean newLog = false;
 
         if (checkTok == -1) {
             System.out.println("Invalid token");
@@ -207,6 +285,8 @@ public class Main {
         else if (checkTok == 0) {
             System.out.println("Creating new log");
             createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
+            createKey(path);
+            newLog = true;
         }
 
         for (Map.Entry(String k, String v) e : values) {
@@ -215,11 +295,29 @@ public class Main {
             }
         }
 
+
+
         // ********** TODO ********
         // Figure out a good way to implement the record-id,
         // incrementing integers might not be great
-        vars = "0," + values.get("timestamp") + "," values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee");
-        fr = new FileWriter(path, true);
+        if (newLog) {
+            recNum =  "1:" + path;
+        }
+        else {
+            recNum = getNextRecNum(path);
+        }
+        vars = BCrypt.hashpw(recNum, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee");
+        encVars = encrypt(vars);
+        try {
+            fr = new FileWriter(path, true);
+        }
+        catch (IOException e) {
+            System.out.println("Error opening log");
+            System.exit(255);
+        }
+        fr.write(recNum + ":" + encVars + "\n");
+
+
 
 
         return 0;
