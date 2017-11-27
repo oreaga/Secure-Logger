@@ -13,8 +13,8 @@ public class LogAppender {
     private boolean arrive;
     private boolean leave;
 
-    public void LogAppender() {
-        this.values = new HashMap<String, String>();
+    public LogAppender() {
+        values = new HashMap<String, String>();
         values.put("timestamp", null);
         values.put("token", null);
         values.put("employee", null);
@@ -29,7 +29,6 @@ public class LogAppender {
     }
 
     public void put(String k, String v) {
-        System.out.println(this.values);
         this.values.put(k, v);
     }
 
@@ -37,104 +36,24 @@ public class LogAppender {
         return this.values.get(k);
     }
 
-    public static void main(String [] args) {
-        /*
-        FileWriter fw = null;
-        InputStream is = null;
-        InputStreamReader fr = null;
-        BufferedReader br = null;
-        byte[] b = null;
-        String enc = null;
-        String r = null;
-        try {
-            fw = new FileWriter("test-read.txt");
-            fr = new InputStreamReader(is);
-            br = new BufferedReader(fr);
-        }
-        catch (Exception e) {}
-        Main m = new Main();
-        enc = Main.encrypt("Fuck this", "test-log.txt");
+    public boolean getArrive() {
+        return arrive;
+    }
 
-        try {fw.write(enc);} catch (Exception e) {}
-        try{r = br.readLine();} catch (Exception e) {}
+    public boolean getLeave() {
+        return leave;
+    }
 
-        String dec = Main.decrypt(r, "test-log.txt");
-        System.out.println(dec);
-        */
+    public void setArrive(boolean val) {
+        this.arrive = val;
+    }
 
-        Main m = new Main();
-        int i;
-        int error = 0;
-        int validToken = -1;
-
-        // Get Logfile name
-        System.out.println(args.length - 1);
-        System.out.println(args[args.length - 1]);
-        m.put("path", args[args.length - 1]);
-
-        // Get the employee or guest name
-        // If one not provided fail with 255
-        System.out.println("Getting name");
-        for (i = 0; i < args.length; i++) {
-            if (args[i].equals("-E")) {
-                error = error + m.processEmployee(args[i + 1]);
-            }
-            if (args[i].equals("-G")) {
-                error = error + m.processGuest(args[i + 1]);
-            }
-        }
-        if (m.values.get("guest") == null && m.values.get("employee") == null) {
-            System.out.println("Please provide employee or guest name");
-            System.exit(255);
-        }
-
-        for (i = 0; i < args.length; i++) {
-            System.out.println(args[i]);
-            if (args[i].equals("-T")) {
-                error = error + m.processTime(args[i + 1]);
-            }
-            if (args[i].equals("-K")) {
-                error = error + m.processToken(args[i + 1]);
-            }
-            if (args[i].equals("-R")) {
-                error = error + m.processRoom(args[i + 1]);
-            }
-        }
-
-        // Search command line for A or L
-        for (i = 0; i < args.length; i++) {
-            if (args[i].equals("-A")) {
-                m.arrive = true;
-            }
-            if (args[i].equals("-L")) {
-                m.leave = true;
-            }
-        }
-
-        // Set values.arrival to A or L
-        if (m.leave == true && m.arrive == true) {
-            System.out.println("Please specify only one of A or L");
-            System.exit(255);
-        }
-        else if (m.arrive == true) {
-            m.put("arrival", "A");
-        }
-        else if (m.leave == true) {
-            m.put("arrival", "L");
-        }
-        else {
-            System.out.println("Please supply one of A or L");
-        }
-
-        if (error != 0) {
-            System.exit(255);
-        }
-
-        // m.appendToLog();
+    public void setLeave(boolean val) {
+        this.leave = val;
     }
 
     // Method for checking time constraints
-    private int processTime(String time) {
+    public int processTime(String time) {
         Integer t = 0;
         System.out.println("Checking the time");
         try {
@@ -156,7 +75,7 @@ public class LogAppender {
     }
 
     // Method for checking token constraints
-    private int processToken(String tok) {
+    public int processToken(String tok) {
         if (!(tok.matches("\\w+"))) {
             return 1;
         }
@@ -168,7 +87,7 @@ public class LogAppender {
     }
 
     // Method for checking employee constraints
-    private int processEmployee(String e) {
+    public int processEmployee(String e) {
         if (!(e.matches("[a-zA-Z]+"))) {
             return 1;
         }
@@ -179,7 +98,7 @@ public class LogAppender {
         return 0;
     }
 
-    private int processGuest(String g) {
+    public int processGuest(String g) {
         if (!(g.matches("[a-zA-Z]+"))) {
             return 1;
         }
@@ -295,7 +214,7 @@ public class LogAppender {
     }
     */
 
-    private int processRoom(String r) {
+    public int processRoom(String r) {
         System.out.println("Checking Room");
         Integer room = -1;
         try {
@@ -449,29 +368,29 @@ public class LogAppender {
         }
         catch (FileNotFoundException e) {
             System.out.println("Could not open hashes.txt to check token");
-            System.exit(255);
+            buf = null;
         }
 
-        try {
-            while ((text = buf.readLine()) != null) {
-                fields = text.split(":");
+        if (buf != null) {
+            try {
+                while ((text = buf.readLine()) != null) {
+                    fields = text.split(":");
 
-                if (values.get("path").equals(fields[0])) {
-                    System.out.println("Found the right log file");
+                    if (values.get("path").equals(fields[0])) {
+                        System.out.println("Found the right log file");
 
-                    if (BCrypt.checkpw(values.get("token"), fields[1])) {
-                        System.out.println("Hashes match");
-                        return 0;
-                    }
-                    else {
-                        System.out.println("Hashes do not match");
-                        return 0;
+                        if (BCrypt.checkpw(values.get("token"), fields[1])) {
+                            System.out.println("Hashes match");
+                            return 1;
+                        } else {
+                            System.out.println("Hashes do not match");
+                            return -1;
+                        }
                     }
                 }
+            } catch (IOException e) {
+                System.out.println("Error reading from hash file");
             }
-        }
-        catch (IOException e) {
-            System.out.println("Error reading from hash file");
         }
 
         return 0;
@@ -480,7 +399,7 @@ public class LogAppender {
     private static void createLog(String log, String hash) {
         FileWriter fw = null;
         try {
-            fw = new FileWriter("hashes.txt", true);
+            fw = new FileWriter("hashes.txt");
         }
         catch (IOException e) {
             System.out.println("Error opening file hashes.txt");
@@ -488,6 +407,7 @@ public class LogAppender {
 
         try {
             fw.write(log + ":" + hash + "\n");
+            fw.close();
         }
         catch (IOException e) {
             System.out.println("Could not write to hash file");
@@ -662,8 +582,8 @@ public class LogAppender {
         return plainText;
     }
 
-    private int appendToLog() {
-        FileWriter fr = null;
+    public int appendToLog() {
+        FileOutputStream fw = null;
         String vars;
         String encVars;
         String recID;
@@ -672,6 +592,7 @@ public class LogAppender {
         int checkTok = checkToken();
         String validText = null;
         boolean newLog = false;
+        byte[] byteText;
 
         if (checkTok == -1) {
             System.out.println("Invalid token");
@@ -721,8 +642,9 @@ public class LogAppender {
         }
         vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
+        byteText = encrypt(logText, path);
         try {
-            fr = new FileWriter(path);
+            fw = new FileOutputStream(path);
         }
         catch (IOException e) {
             System.out.println("Error opening log");
@@ -730,7 +652,8 @@ public class LogAppender {
         }
 
         try {
-            fr.write(logText);
+            fw.write(byteText);
+            fw.close();
         }
         catch (IOException e) {
             System.out.println("Error appending to log");
