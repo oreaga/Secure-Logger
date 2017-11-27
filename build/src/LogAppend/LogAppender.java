@@ -640,7 +640,7 @@ public class LogAppender {
         else {
             recID = validText;
         }
-        vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
+        vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
         byteText = encrypt(logText, path);
         try {
