@@ -286,8 +286,8 @@ public class LogAppender {
 
         // Initialize employee/guest state
         prevFields = prevLine.split(",");
+        currStamp = Integer.parseInt(prevFields[1]);
         if (prevFields[geIndex].equals(ge)) {
-            currStamp = Integer.parseInt(prevFields[1]);
             currRoom = prevFields[3];
             if (prevFields[2].equals("A") && prevFields[3].equals("0")) {
                 inGallery = true;
@@ -360,10 +360,20 @@ public class LogAppender {
         }
 
         if (valid) {
-            retString = i.toString() + prevFields[1];
+            retString = i.toString() + prevFields[0];
         }
 
         return retString;
+    }
+
+    private boolean checkValidInitial() {
+        boolean valid = false;
+
+        if (values.get("room") == "0" && values.get("arrival") == "A") {
+            valid = true;
+        }
+
+        return valid;
     }
 
     private void checkHash(Integer lineNum, String prevHash, String currHash) {
@@ -641,6 +651,10 @@ public class LogAppender {
             }
         }
         else {
+            if (!checkValidInitial()) {
+                System.out.println("Invalid initial record");
+                System.exit(255);
+            }
             logText = "";
         }
 
