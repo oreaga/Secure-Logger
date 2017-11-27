@@ -7,13 +7,13 @@ import java.util.*;
 import java.io.*;
 import org.mindrot.jbcrypt.BCrypt;
 
-public class Main {
+public class LogAppender {
     private HashMap<String, String> values;
     private String logText;
     private boolean arrive;
     private boolean leave;
 
-    public void Main() {
+    public void LogAppender() {
         this.values = new HashMap<String, String>();
         values.put("timestamp", null);
         values.put("token", null);
