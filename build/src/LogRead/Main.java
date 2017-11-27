@@ -3,6 +3,12 @@ package src.LogRead;
 import java.util.*;
 import java.io.*;
 import org.mindrot.jbcrypt.BCrypt;
+import java.security.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+
+// problem with appending to both hashes.txt (overwrites) and 
+// logfile (throws nullpointer exception when validating)
 
 public class Main {
     public static void main(String [] args) {
@@ -27,11 +33,11 @@ public class Main {
         executeCommand(values);
 
         // Debugging
-        for (Map.Entry<String, String> entry : values.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            System.out.println(key + " " + value);
-        }
+        // for (Map.Entry<String, String> entry : values.entrySet()) {
+        //     String key = entry.getKey();
+        //     Object value = entry.getValue();
+        //     System.out.println(key + " " + value);
+        // }
     }
 
     private static void invalid() {
@@ -39,33 +45,140 @@ public class Main {
         System.exit(255);
     }
 
+    private static void executeCommand(HashMap<String, String> values) {
+        if (values.get("-S") != null) {
+            printCurrentState(values);
+        } else if (values.get("-R") != null) {
+            // listRoomsEntered(values);
+        } else if (values.get("-T") != null) {
+            // printTotalTime(values);
+        } else {
+            System.out.println("-S -R or -T should be specified"); //Debug
+        }
+    }
+
     private static int printCurrentState(HashMap<String, String> values) {
         // employees hash with name as key and current roomID as the value
         // guests hash with name as key and current roomID as the value
+        // <record-id>,<timestamp>,<A or L>,<room-id>,<guest-name>,<employee-name>
         HashMap<String, Integer> employees = new HashMap<String, Integer>();
         HashMap<String, Integer> guests = new HashMap<String, Integer>();
+        String recordID;
+        String timestamp;
+        String arriveOrLeave;
+        String roomID;
+        String guestName;
+        String employeeName;
 
-        FileReader in = null;
-        BufferedReader buf = null;
-        String line = null;
+        String logText = getLogText(values);
+        String logTextTrimmed = logText.trim();
+        // System.out.println(logText); // Debug
+        String[] lines = logTextTrimmed.split("\n");
+        int x = 1;
+        for (String line : lines) {
+            // System.out.println("Line: " + line); // Debug
+            String[] record = line.split(",");
+            if (record.length < 5) {
+                System.out.println("Error: Logfile line has less than 6 fields"); // Debug
+                invalid();
+            }
+            timestamp = record[1];
+            arriveOrLeave = record[2];
+            roomID = record[3];
+            guestName = record[4];
 
-        try {
-            in = new FileReader(values.get("logfile"));
-            buf = new BufferedReader(in);
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("Could not open hashes.txt to check token");
-            System.exit(255);
-        }
+            // since employee name is last it will not be given "" by split
+            if (record.length == 6) {
+                employeeName = record[5];
+            } else {
+                employeeName = "null";
+            }
 
-        try {
-            while ((line = buf.readLine()) != null) {
-                // record = decrypt(line);
-                // store stuff about record
+            // System.out.println("guestName: " + guestName); // Debug
+            // System.out.println("employeeName: " + employeeName); // Debug
+
+            // will an absence of a field be null or empty string??
+            if (guestName.equals("null") && !employeeName.equals("null")) {
+                if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
+                    // employee entered a room
+                    employees.put(employeeName, Integer.parseInt(roomID));
+                } else if (arriveOrLeave.equals("A") && roomID.equals("null")) {
+                    // employee entered the gallery but not a specific room
+                    employees.put(employeeName, -1);
+                } else if (arriveOrLeave.equals("L") && !roomID.equals("null")) {
+                    // employee left a room
+                    employees.put(employeeName, -1);
+                } else if (arriveOrLeave.equals("L") && roomID.equals("null")) {
+                    // employee has left the gallery
+                    employees.remove(employeeName);
+                } else {
+                    System.out.println("Every line should either have either A or L"); // Debug
+                    invalid();    
+                }
+            } else if (!guestName.equals("") && employeeName.equals("null")) {
+                if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
+                    // guest entered a room
+                    guests.put(guestName, Integer.parseInt(roomID));
+                } else if (arriveOrLeave.equals("A") && roomID.equals("null")) {
+                    // guest entered the gallery but not a specific room
+                    guests.put(guestName, -1);
+                } else if (arriveOrLeave.equals("L") && !roomID.equals("null")) {
+                    // guest left a room
+                    guests.put(guestName, -1);
+                } else if (arriveOrLeave.equals("L") && roomID.equals("null")) {
+                    // guest has left the gallery
+                    guests.remove(guestName);
+                } else {
+                    System.out.println("Every line should either have either A or L"); // Debug
+                    invalid();    
+                }
+            } else {
+                System.out.println("Every line should either have an employee or guest name"); // Debug
+                invalid();
             }
         }
-        catch (IOException e) {
-            System.out.println("Error reading from hash file");
+
+        // sort and print employee names
+        ArrayList<String> employeeNames = new ArrayList<String>();
+        for (Map.Entry<String, Integer> entry : employees.entrySet()) {
+            String name = entry.getKey();
+            Object room = entry.getValue();
+            employeeNames.add(name);
+        }
+        Collections.sort(employeeNames); // TODO check that this orders according to ASCII (like in Oracle)
+        int count = 1;
+        int size = employeeNames.size();
+        for (String s : employeeNames) {
+            if (count < size) {
+                System.out.print(s + ",");
+            } else {
+                System.out.print(s + "\n");
+            }
+            count++;
+        }
+
+        // and sort and print guest names
+        ArrayList<String> guestNames = new ArrayList<String>();
+        for (Map.Entry<String, Integer> entry : guests.entrySet()) {
+            String name = entry.getKey();
+            Object room = entry.getValue();
+            guestNames.add(name);
+        }
+        Collections.sort(guestNames, new Comparator<String>() { // If the above orders properly then switch this too
+            @Override
+            public int compare(String s1, String s2) {
+                return s1.compareToIgnoreCase(s2);
+            }
+        });
+        count = 1;
+        size = guestNames.size();
+        for (String s : guestNames) {
+            if (count < size) {
+                System.out.print(s + ",");
+            } else {
+                System.out.print(s + "\n");
+            }
+            count++;
         }
 
         return 0;
@@ -102,18 +215,6 @@ public class Main {
         }
         // check against hashes.txt for specified logfile
         return result;
-    }
-
-    private static void executeCommand(HashMap<String, String> values) {
-        if (values.get("-S") != null) {
-            printCurrentState(values);
-        } else if (values.get("-R") != null) {
-            // listRoomsEntered(values);
-        } else if (values.get("-T") != null) {
-            //printTotalTime(values);
-        } else {
-            System.out.println("Shouldn't get here");
-        }
     }
 
     // makes sure command is valid by making checks that could not be made 
@@ -193,7 +294,7 @@ public class Main {
                 values.put("-T", "found");
                 
             } else if (args[i].equals("-I")) {
-                System.out.println("Unimplemented");
+                System.out.println("unimplemented");
                 System.exit(255);
             } else if (args[i].equals("-E")) {
                 // should only ever have one -E OR -G supplied
@@ -237,5 +338,107 @@ public class Main {
         }
 
         return values;
+    }
+
+
+    /****** Encryption Stuff *********/
+
+
+    private static String getLogText(HashMap<String, String> values) {
+        FileInputStream fs = null;
+        byte[] encText = null;
+        String plainText = null;
+        String path = values.get("logfile");
+        try {
+            fs = new FileInputStream(path);
+            encText = new byte[fs.available()];
+            fs.read(encText);
+        }
+        catch (Exception e) {
+            System.out.println("Unable to open logfile to get text");
+            System.exit(255);
+        }
+
+        plainText = decrypt(encText, path);
+        return plainText;
+    }
+
+    private static byte[] getKey(String path) {
+        byte[] key = new byte[16];
+        FileInputStream fs = null;
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
+        try {
+            fs = new FileInputStream(logfile + ".key");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not find key file");
+            System.exit(255);
+        }
+
+        try {
+            fs.read(key);
+        }
+        catch (IOException e) {
+            System.out.println("Could not read key file");
+            System.exit(255);
+        }
+        return key;
+    }
+
+    private static byte[] getIV(String path) {
+        byte[] iv = new byte[16];
+        FileInputStream fs = null;
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
+        try {
+            fs = new FileInputStream(logfile + ".iv");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not find iv file");
+            System.exit(255);
+        }
+
+        try {
+            fs.read(iv);
+        }
+        catch (IOException e) {
+            System.out.println("Could not read iv file");
+            System.exit(255);
+        }
+        return iv;
+    }
+
+    private static String decrypt(byte[] encMessage, String path) {
+        Cipher cipher = null;
+        String retString = null;
+        try {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        }
+        catch (Exception e) {
+            System.out.println("Could not create cipher for decryption");
+        }
+        byte[] key = getKey(path);
+        byte[] iv = getIV(path);
+        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        try {
+            cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
+        }
+        catch (Exception e) {
+            System.out.println("Invalid parameters for decryption");
+            System.exit(255);
+        }
+        byte[] decrypted = null;
+
+        try {
+            decrypted = cipher.doFinal(encMessage);
+        }
+        catch (Exception e) {
+            System.out.println("Bad block size for decryption");
+            System.exit(255);
+        }
+        retString = new String(decrypted);
+        return retString;
     }
 }
