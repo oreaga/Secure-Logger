@@ -9,6 +9,9 @@ import org.mindrot.jbcrypt.BCrypt;
 
 public class Main {
     private HashMap<String, String> values;
+    private String logText;
+    private boolean arrival;
+    private boolean leave;
 
     public void Main() {
         this.values = new HashMap<String, String>();
@@ -20,12 +23,43 @@ public class Main {
         values.put("room", null);
         values.put("path", null);
         values.put("recentID", null);
+        logText = null;
+        this.arrive = false;
+        this.leave = false;
     }
 
     public static void main(String [] args) {
+        /*
+        FileWriter fw = null;
+        InputStream is = null;
+        InputStreamReader fr = null;
+        BufferedReader br = null;
+        byte[] b = null;
+        String enc = null;
+        String r = null;
+        try {
+            fw = new FileWriter("test-read.txt");
+            fr = new InputStreamReader(is);
+            br = new BufferedReader(fr);
+        }
+        catch (Exception e) {}
+        Main m = new Main();
+        enc = Main.encrypt("Fuck this", "test-log.txt");
+
+        try {fw.write(enc);} catch (Exception e) {}
+        try{r = br.readLine();} catch (Exception e) {}
+
+        String dec = Main.decrypt(r, "test-log.txt");
+        System.out.println(dec);
+        */
+
         Main m = new Main();
         int i;
         int error = 0;
+        int validToken = -1;
+
+        // Get Logfile name
+        m.values.put("path", args[args.length - 1]);
 
         // Get the employee or guest name
         // If one not provided fail with 255
@@ -35,12 +69,12 @@ public class Main {
                 error = error + m.processEmployee(args[i + 1]);
             }
             if (args[i].equals("-G")) {
-                error = error + m.processGuest(args[i + i]);
+                error = error + m.processGuest(args[i + 1]);
             }
-            if (m.values.get("guest") == null && m.values.get("employee") == null) {
-                System.out.println("Please provide employee or guest name");
-                System.exit(255);
-            }
+        }
+        if (m.values.get("guest") == null && m.values.get("employee") == null) {
+            System.out.println("Please provide employee or guest name");
+            System.exit(255);
         }
 
         for (i = 0; i < args.length; i++) {
@@ -49,19 +83,36 @@ public class Main {
                 error = error + m.processTime(args[i + 1]);
             }
             if (args[i].equals("-K")) {
-                error = error + m.processToken(args[i+1]);
+                error = error + m.processToken(args[i + 1]);
             }
             if (args[i].equals("-R")) {
                 error = error + m.processRoom(args[i + 1]);
             }
+        }
 
+        // Search command line for A or L
         for (i = 0; i < args.length; i++) {
             if (args[i].equals("-A")) {
-                error = error + m.processArrival();
+                m.arrive = true;
             }
             if (args[i].equals("-L")) {
-                error = error + m.processLeave();
+                m.leave = true;
             }
+        }
+
+        // Set values.arrival to A or L
+        if (m.leave == true && m.arrive == true) {
+            System.out.println("Please specify only one of A or L");
+            System.exit(255);
+        }
+        else if (m.arrival == true) {
+            m.values.put("arrival", "A");
+        }
+        else if (m.leave == true) {
+            m.values.put("arrival", "L");
+        }
+        else {
+            System.out.println("Please supply one of A or L");
         }
 
         if (error != 0) {
@@ -69,8 +120,6 @@ public class Main {
         }
 
         m.appendToLog();
-        }
-
     }
 
     // Method for checking time constraints
@@ -128,6 +177,8 @@ public class Main {
         }
         return 0;
     }
+
+/*
     private String getLastLine(String path) {
         FileReader fr;
         BufferedReader br;
@@ -160,15 +211,30 @@ public class Main {
 
         return recLine;
     }
+*/
 
-    private int processArrival() {
-        /*
+    /*
+    private int checkArrival(String a) {
         FileReader fr;
         BufferedReader br;
         String last = null;
         String prevRec = null;
+        String decRec = null;
+        String[] recFields = null;
+        String[] fields = null;
         boolean entGallery = false;
         boolean left = true;
+        boolean guest = false;
+        int index = -1;
+
+        if (values.get("guest") != null) {
+            guest = true;
+            index = 4;
+        }
+        else {
+            index = 3;
+        }
+
 
 
         if (path == null) {
@@ -189,17 +255,34 @@ public class Main {
         if (last == null) {
             return 0;
         }
-        while ((last = br.readLine()) != null) {
-
+        else {
+            decRec = new String(decrypt(last.split(":")[1]));
+            prevHash = decRec.split(",")[0];
         }
-        */
+
+        while ((last = br.readLine()) != null) {
+            fields = last.split(":");
+            currNum = fields[0];
+            decRec = new String(decrypt(fields[1]));
+            recFields = decRec.split(",");
+
+            // Check if the log has been tampered with
+            if (!(BCrypt.checkpw(currNum + prevHash, decRec.split(",")[0]))) {
+                System.out.println("Invalid log state, record hashes don't match");
+                System.exit(255);
+            }
+
+            // Check for info about current guest/employee
+            if (recFields[index] == values.get(""))
+        }
 
         return 0;
     }
 
-    private int processLeave() {
+    private int checkLeave() {
         return 0;
     }
+    */
 
     private int processRoom(String r) {
         System.out.println("Checking Room");
@@ -219,6 +302,116 @@ public class Main {
             values.put("room", room.toString());
         }
         return 0;
+    }
+
+    private String checkValid() {
+        String al;
+        Integer currStamp;
+        Integer prevStamp;
+        String currRoom = null;
+        String newRoom = values.get("room")
+        String ge = null;
+        int geIndex = null;
+        boolean free = true;
+        StringReader sr = null;
+        BufferedReader br = null;
+        String currLine = null;
+        String prevLine = null;
+        boolean inGallery = false;
+        boolean valid = false;
+        String retString = null;
+        int i = 2;
+
+        // Determine whether A or L and guest or employee
+        al = values.get("arrival");
+        stamp = Integer.parseInt(values.get("timestamp"));
+        if (values.get("guest") != null) {
+            geIndex = 4;
+            ge = values.get("guest");
+        }
+        else {
+            geIndex = 5;
+            ge = values.get("employee");
+        }
+
+        // Ensure that log has been decrypted
+        if (logText == null) {
+            System.out.println("No plaintext to check for validity");
+            System.exit(255);
+        }
+        else {
+            sr = new StringReader(logText);
+            br = new BufferedReader(sr);
+            prevLine = br.readLine();
+        }
+
+        while ((currLine = br.readLine()) != null) {
+            prevFields = prevLine.split(",");
+            currFields = currLine.split(",");
+
+            // Ensure log has not been modified
+            checkHash(i, prevFields[0], currFields[0])
+
+            // Ensure timestamp is being incremented
+            try {
+                prevStamp = Integer.parseInt(prevFields[1]);
+                currStamp = Integer.parseInt(currFields[1]);
+            }
+            catch (Exception e) {
+                System.out.println("Error parsing timestamps for validity");
+                System.exit(255);
+            }
+            if (!(currStamp > prevStamp)) {
+                System.out.println("Invalid timestamp: Not Incrementing");
+                System.exit(255);
+            }
+
+            // Update employee/guest state
+            if (currFields[geIndex].equals(ge)) {
+                if (currFields[2].equals("A") && currFields[3].equals("0")) {
+                    inGallery = true;
+                }
+                else if (currFields[2].equals("L") && currFields[3].equals("0")) {
+                    inGallery = false;
+                }
+                else if (currFields[2].equals("A")) {
+                    free = false;
+                    currRoom = currFields[3];
+                }
+                else if (currFields[2].equals("L")) {
+                    free = true;
+                    currRoom = "0";
+                }
+            }
+
+            // Update block
+            prevLine = currLine;
+            i++;
+        }
+
+        // Check that record to be appended is consistent with state
+        if ((inGallery == false && newRoom.equals("0") && al = "A") ||
+            (inGallery == true && free == true && al == "A" && !(newRoom.equals("0"))) ||
+            (inGallery == true && free == false && al == "L" && newRoom.equals(currRoom)) ||
+            (inGallery == true && free == true && al == "L" && newRoom.equals("0"))
+            ) {
+
+            valid = true;
+        }
+
+        if (valid)
+            retString == i.toString() + prevFields[1];
+        }
+
+        return retString;
+    }
+
+    private void checkHash(int lineNum, String prevHash, String currHash) {
+        String num = lineNum.toString();
+        if (!(BCrypt.checkpw(num + prevHash, currHash))) {
+            System.out.println("Hashes do not match, log modified illegally");
+            System.exit(255);
+        }
     }
 
     // Checks the supplied token to determine whether it is correct for the log
@@ -246,7 +439,7 @@ public class Main {
                 if (values.get("path").equals(fields[0])) {
                     System.out.println("Found the right log file");
 
-                    if (BCrypt.checkpw(values.get("token"), fields[0])) {
+                    if (BCrypt.checkpw(values.get("token"), fields[1])) {
                         System.out.println("Hashes match");
                         return 0;
                     }
@@ -282,10 +475,12 @@ public class Main {
         }
     }
 
-    private static void createKey(String logfile) {
+    private static void createKey(String path) {
         FileOutputStream fsKey = null;
         FileOutputStream fsIV = null;
         KeyGenerator keygen = null;
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
         try {
             keygen = KeyGenerator.getInstance("AES");
         }
@@ -317,10 +512,11 @@ public class Main {
         }
     }
 
-    private static byte[] getKey(String logfile) {
-        byte[] key = new byte[128];
+    private static byte[] getKey(String path) {
+        byte[] key = new byte[16];
         FileInputStream fs = null;
-
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
         try {
             fs = new FileInputStream(logfile + ".key");
         }
@@ -339,9 +535,11 @@ public class Main {
         return key;
     }
 
-    private static byte[] getIV(String logfile) {
+    private static byte[] getIV(String path) {
         byte[] iv = new byte[16];
         FileInputStream fs = null;
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
         try {
             fs = new FileInputStream(logfile + ".iv");
         }
@@ -392,8 +590,9 @@ public class Main {
         return encrypted;
     }
 
-    private static byte[] decrypt(String encMessage, String path) {
+    private static String decrypt(byte[] encMessage, String path) {
         Cipher cipher = null;
+        String retString = null;
         try {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         }
@@ -411,30 +610,46 @@ public class Main {
             System.out.println("Invalid parameters for decryption");
             System.exit(255);
         }
-        byte[] decrypted = new byte[cipher.getOutputSize(encMessage.getBytes().length)];
+        byte[] decrypted = null;
 
         try {
-            decrypted = cipher.doFinal(encMessage.getBytes());
+            decrypted = cipher.doFinal(encMessage);
         }
         catch (Exception e) {
             System.out.println("Bad block size for decryption");
             System.exit(255);
         }
-        return decrypted;
+        retString = new String(decrypted);
+        return retString;
     }
 
-    private String getNextRecNum(String path) {
-        return "Filler next record number";
+    private String getLogText() {
+        FileInputStream fs = null;
+        byte[] encText;
+        String path = values.get("path");
+        try {
+            fs = new FileInputStream(path);
+        }
+        catch (Exception e) {
+            System.out.println("Unable to open logfile to get text");
+            System.exit(255);
+        }
+
+        enctext = new byte[fs.available()];
+        fs.read(encText);
+        plainText = decrypt(encText, path);
+        return plainText;
     }
 
     private int appendToLog() {
         FileWriter fr = null;
         String vars;
-        byte[] encVars;
-        String recNum;
+        String encVars;
+        String recID;
         String token = values.get("token");
         String path = values.get("path");
         int checkTok = checkToken();
+        String validText = null;
         boolean newLog = false;
 
         if (checkTok == -1) {
@@ -444,8 +659,20 @@ public class Main {
         else if (checkTok == 0) {
             System.out.println("Creating new log");
             createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
-            createKey(path.split("/")[path.length() - 1]);
+            createKey(path);
             newLog = true;
+        }
+
+        if (!newLog) {
+            logText = getLogText();
+            validText = checkValid();
+            if (validText == null) {
+                System.out.println("Record not consistent with log state");
+                System.exit(255);
+            }
+        }
+        else {
+            logText = "";
         }
 
         for (Map.Entry<String, String> e : values.entrySet()) {
@@ -460,13 +687,12 @@ public class Main {
         // Figure out a good way to implement the record-id,
         // incrementing integers might not be great
         if (newLog) {
-            recNum =  "1:" + path;
+            recID =  "1" + path;
         }
         else {
-            recNum = getNextRecNum(path);
+            recID = validText;
         }
-        vars = BCrypt.hashpw(recNum, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee");
-        encVars = encrypt(vars, path);
+        vars = BCrypt.hashpw(recId, BCrypt.gensalt(12)) + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         try {
             fr = new FileWriter(path, true);
         }

@@ -6,8 +6,8 @@
 # 	It will make the libraries available to both logappend and logread.
 ###############################################################################
 # Library setup
-JFLAGS = -g -classpath .:/java/commons-crypto-1.0.0.jar:/java/commons-crypto-1.0.0-sources.jar:/java
-LIBSCLASSPATH = /java/commons-crypto-1.0.0.jar /java/commons-crypto-1.0.0-sources.jar /java
+JFLAGS = -g -classpath .:/java/jce1_2_2.jar:/java/sun_jceprovider.jar:/java/local_policy.jar:/java/US_export_policy.jar:/java/jBCrypt-0.4.jar
+LIBSCLASSPATH = /java/jce1_2_2.jar /java/sun_jceprovider.jar /java/local_policy.jar /java/US_export_policy.jar /java/jBCrypt-0.4.jar
 
 # Dependencies of the Logappend program.
 LOGAPPENDCLASSES = \

@@ -1,2 +1,2 @@
-Class-Path: logappend /java/commons-crypto-1.0.0.jar /java/commons-crypto-1.0.0-sources.jar /java
+Class-Path: logappend /java/jce1_2_2.jar /java/sun_jceprovider.jar /java/local_policy.jar /java/US_export_policy.jar /java/jBCrypt-0.4.jar
 Main-Class: src.LogAppend.Main

@@ -1,0 +1,125 @@
+<HTML>
+<HEAD>
+  <!--#config timefmt="%d-%b-%y" -->
+  <TITLE>Java(TM) Cryptography Extension (JCE) 1.2.2</TITLE>
+</HEAD>
+<BODY BGCOLOR="#ffffff" VLINK="#660066">
+
+<P><TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+  <TR>
+    <TD WIDTH="80%">
+    <STRONG><FONT SIZE="+2">Java<SUP></FONT><FONT SIZE="-2">TM</FONT><FONT
+     SIZE="+2"></SUP> Cryptography Extension (JCE) 1.2.2</FONT></STRONG></TD> 
+    <TD WIDTH="1">
+    <IMG SRC="images/Swrd.gif" WIDTH="105" HEIGHT="150" ALIGN="BOTTOM"
+    BORDER="0" NATURALSIZEFLAG="3">
+</TD>
+  </TR>
+</TABLE><BR>
+<BR>
+</P>
+
+<p><b><font size=+1>Known Bugs</font></b>
+<p>
+<hr>
+<ol>
+<li>
+Due to a bug in the Java<sup><font size=-2>TM</font></sup> 2 SDK, you must
+list the "SUN" provider as the first security provider when loading a
+signed JAR file.</li>
+<p>Since the JCE 1.2.2 framework and JCE providers are signed JAR files,
+the "SUN" provider must precede those "signed" security providers
+when using JCE 1.2.2.
+<p><B>Note:</B>
+<ol>
+<li>
+By default, in the Java<sup><font size=-2>TM</font></sup> 2 SDK, the "SUN"
+provider is automatically configured as a static provider with preference
+order 1 and in the security properties file.</li>
+
+<li>
+A <code>StackOverflowError</code> maybe thrown if a "signed" security provider is registered
+dynamically as the first provider.</li>
+</ol>
+
+<p><B>Workaround:</B>
+<ol>
+<li>
+Always place signed providers after "SUN" provider.</li>
+
+<br>&nbsp;</ol>
+
+<li>
+Due to a bug in the Java<sup><font size=-2>TM</font></sup> 2 SDK, sometimes
+you may get a <code>NullPointerException</code> from the 
+<code>java.util.jar.JarVerifier.processEntry</code> method 
+if a JCE 1.2.2 provider (which is signed) is registered both 
+statically and dynamically and a security manager is 
+installed on the command line.</li>
+
+<p><B>Workaround:</B>
+<ol>
+<li>
+Register a JCE 1.2.2 provider statically or dynamically, but do not register
+it <I>both</I> statically and dynamically. If you register a provider solely  
+one way or the other, there is no problem installing a security manager on the
+command line.</li>
+<P>
+<li>
+Install the security manager in your code instead of installing it on the
+command line. Then it doesn't matter how you register a JCE 1.2.2 provider.</li>
+</ol>
+
+
+<P>
+<li>
+Due to a bug in the Java<sup><font size=-2>TM</font></sup> 2 SDK, if JCE
+1.2.2 has been installed as an "installed" extension, then the SealedObject
+class can only unseal objects that are either a part of the Java 2 SDK
+or part of an installed extension. It cannot unseal other objects.&nbsp;</li>
+
+<p><B>Workaround:</B>
+<ol>
+<li>Have both the JCE 1.2.2 framework and JCE providers
+in the class path rather than as installed extensions. The jurisdiction
+policy files must be in the same directory as the JCE 
+1.2.2 framework JAR file. In addition, make sure that 
+sufficient permissions are granted to the JCE 1.2.2 
+framework and JCE providers.
+</li></ol>
+</ol>
+<P>
+
+<P><HR ALIGN=LEFT><BR>
+</P>
+
+
+<P><CENTER><A HREF="CHANGES.html">CHANGES</A>
+| <A HREF="README">README</A> | <A HREF="LICENSE">LICENSE
+|</A> <A HREF="COPYRIGHT.html">COPYRIGHT</A> <BR>
+<A HREF="INSTALL.html">INSTALL</A> | <A HREF="FAQ.html">FAQ</A>
+| <A HREF="KNOWNBUGS.html">KNOWN BUGS</A> | 
+<A HREF="http://java.sun.com/cgi-bin/bugreport.cgi">SUBMIT BUGS</A></CENTER></P>
+
+<P><TABLE WIDTH="100%" BORDER="0" CELLSPACING="2" CELLPADDING="0">
+  <TR>
+    <TD WIDTH="50%">
+    <P>&nbsp;</P>
+
+    <P><FONT SIZE="-2">Unless otherwise licensed, code in all<BR>
+    technical manuals herein (including articles,<BR>
+    FAQs, samples) is provided under this License.</FONT></TD> 
+    <TD WIDTH="50%">
+    <P ALIGN=RIGHT><IMG SRC="images/v3_sun_logo.gif" WIDTH="64" 
+    HEIGHT="28" ALIGN="BOTTOM" BORDER="0" NATURALSIZEFLAG="3"><BR>
+    <FONT SIZE="-2">Copyright &COPY; 1995-2002 <A HREF="http://www.sun.com/">Sun
+    Microsystems, Inc</A>.<BR>
+    All Rights Reserved. <A HREF="http://www.sun.com/share/text/termsofuse.html">Terms
+    of Use</A>. <A HREF="http://www.sun.com/privacy/">Privacy Policy</A>.</FONT></TD> 
+  </TR>
+</TABLE>
+
+</BODY>
+</HTML>
+
+

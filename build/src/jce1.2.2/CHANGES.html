@@ -1,0 +1,200 @@
+<HTML>
+<HEAD>
+  <!--#config timefmt="%d-%b-%y" -->
+  <TITLE>Java(TM) Cryptography Extension (JCE) 1.2.2</TITLE>
+</HEAD>
+<BODY BGCOLOR="#ffffff" VLINK="#660066">
+
+<P><TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+  <TR>
+    <TD WIDTH="80%">
+    <STRONG><FONT SIZE="+2">Java<SUP></FONT><FONT SIZE="-2">TM</FONT><FONT
+     SIZE="+2"></SUP> Cryptography Extension (JCE) 1.2.2</FONT></STRONG></TD> 
+    <TD WIDTH="1">
+    <IMG SRC="images/Swrd.gif" WIDTH="105" HEIGHT="150" ALIGN="BOTTOM"
+    BORDER="0" NATURALSIZEFLAG="3">
+</TD>
+  </TR>
+</TABLE><BR>
+<BR>
+<B><FONT SIZE="+1">Summary of Changes and Enhancements</FONT></B></P>
+
+<P>This document lists the major changes and enhancements since
+the JCE 1.2 release. The current release, JCE 1.2.2, is a maintenance
+release of JCE 1.2.1. There are no new methods and classes in
+JCE 1.2.2. For easy reference, this document is divided into the
+following sections:</P>
+
+<BLOCKQUOTE>
+  <P><li><A HREF="#BugFixes122">Bug Fixes and Changes in JCE 1.2.2</A></li></P>
+</BLOCKQUOTE>
+
+<UL>
+  <LI><A HREF="#Features121">Features and New API</A>
+</UL>
+
+<H2><A NAME="BugFixes122"></A>Bug Fixes and Changes in JCE 1.2.2</H2>
+
+<P>Here is a list of major bug fixes/changes and their descriptions:</P>
+
+<BLOCKQUOTE>
+  <P><li>JCE has changed its signed jar verification routine to
+  accept signed jars with legitimate certificates even if the certificate
+  has expired. As a result, JCE services will not be disrupted
+  even if the signer's certificate for a JCE provider has expired.
+  </li><li>Depending on how providers register their implementations,
+  provider lookup may return an implementation from a less-preferred
+  provider. This error has been fixed so that provider lookup decision
+  is solely based on the preference orders.</li> <li>When verifying
+  providers, JCE failed to correctly verify the provider certificate
+  chain.</li> <li>JCE used to read in the two jurisdiction policy
+  files using the default encoding scheme. Since the two jurisdiction
+  policy files are always encoded in UTF-8, JCE is modified to
+  use UTF-8 regardless of the default.</li> <li><CODE>Cipher.update(byte[]
+  input, int offset, int len)</CODE> threw a <CODE>NullPointerException</CODE>
+  incorrectly when the input data is too short to result in a new
+  block. </li><li>The <CODE>HmacSHA1</CODE> and <CODE>HmacMD5</CODE>
+  implementation in &quot;SunJCE&quot; provider did not produce
+  the correct MAC result if the key length is between 33 and 63
+  bytes. </li><li>The <CODE>DESedeParameters</CODE> implementation
+  in &quot;SunJCE&quot; provider threw an <CODE>ArrayIndexOutOfBoundsException</CODE>
+  if an 0-length byte array is specified in its <CODE>init()</CODE>
+  calls. Now, an <CODE>IOException</CODE> is thrown in place of
+  <CODE>ArrayIndexOutOfBoundsException</CODE> as specified in the
+  API documentation.</li> <li>&quot;SunJCE&quot; provider now returns
+  <CODE>112</CODE> as the key size for all DESede keys since that
+  is the effective key length for DESede keys. </li><li>Clarified
+  the <CODE>javax.crypto.Cipher</CODE> and <CODE>javax.crypto.CipherSpi</CODE>
+  API documentation.</li> <li>Fixed errors in API documentation.</li></P>
+</BLOCKQUOTE>
+
+<P><BR>
+</P>
+
+<H2><A NAME="Features121"></A>Features and New API</H2>
+
+<P>The major new feature in JCE 1.2.1 is the exportability, as
+described in the section <A HREF="#new_features">New Features</A>.
+A few new methods and classes have been added in JCE 1.2.1.</P>
+
+<P>This document is divided into the following sections:</P>
+
+<OL>
+  <LI><A HREF="#new_features">New Features</A>
+  <LI><A HREF="#new_classes">New Classes</A>
+  <LI><A HREF="#new_methods">New Methods</A>
+</OL>
+<OL>
+  <LI><A NAME="new_features"></A><B><FONT SIZE="+1">New Features</FONT></B>&nbsp;
+  <OL>
+    <LI TYPE="a"><B>Made JCE exportable</B>. The JCE 1.2.2 framework
+    is digitally signed. A provider must be signed by a trusted entity.
+    Otherwise, the provider cannot be plugged into the JCE 1.2.2
+    framework. The JCE 1.2.2 framework and providers do mutual authentication
+    at runtime. JCE 1.2.2 introduces an architecture which allows
+    flexible cryptographic strength to be configured via jurisdiction
+    policy files. This new feature doesn't cause any API changes,
+    so it is transparent to JCE application developers. Note: The
+    JCE 1.2.2 software from Sun Microsystems has a single distribution
+    for both domestic and global users. The bundled jurisdiction
+    policy files contain no restrictions on cryptographic strengths.
+    <P><B>Note for Cryptographic Service Providers (CSPs, also known
+    as &quot;providers&quot;)</B>: The document 
+    <A HREF="doc/guide/HowToImplAProvider.html">How
+    to Implement a Provider for Java<sup><FONT SIZE="-2">TM</FONT></sup>
+    Cryptography Extension 1.2.2</A> contains information about how
+    to ensure your provider will work with the JCE 1.2.2 framework.&nbsp;
+    <P><LI><B>Added</B> support for <I>key wrapping</I>.
+    <P><LI><B>Added</B> support for <I>key usage
+    control</I>.
+  </OL>
+<P>
+  <LI><A NAME="new_classes"></A><B><FONT SIZE="+1">New Classes</FONT></B>&nbsp;
+  <OL>
+    <LI TYPE="a"><B>Added</B> <TT>
+   <A HREF="doc/apidoc/javax/crypto/ExemptionMechanism.html">javax.crypto.ExemptionMechanism</A></TT>.
+    An applet or application utilizing an exemption mechanism (such
+    as key recovery) implemented by a provider may be allowed to
+    use cryptography of greater strength than that allowed by default
+    (based on jurisdiction policy files).
+    <P><B>Justification</B>: Customer request.
+    <P><B>Note for CSPs</B>: Added corresponding SPI class <TT><A
+    HREF="doc/apidoc/javax/crypto/ExemptionMechanismSpi.html">javax.crypto.ExemptionMechanismSpi</A></TT>.&nbsp;
+    <P><B>Note</B>: The SunJCE provider does not provide an implementation
+    for this class.
+  </OL>
+  <P>
+<LI><A NAME="new_methods"></A><B><FONT SIZE="+1">New Methods</FONT></B>&nbsp;
+  <OL>
+    <LI TYPE="a"><B>Added</B> <TT><A HREF="doc/apidoc/javax/crypto/Cipher.html#wrap(java.security.Key)">wrap(java.security.Key
+    key)</A></TT> and <TT><A HREF="doc/apidoc/javax/crypto/Cipher.html#unwrap(byte[], java.lang.String, int)">unwrap(byte[]
+    wrappedKey)</A></TT> methods to <TT><A HREF="doc/apidoc/javax/crypto/Cipher.html">javax.crypto.Cipher</A></TT>,
+    which allow users to do key wrapping.&nbsp;
+    <P><B>Justification</B>: Customer request.
+    <P><B>Note for CSPs</B>: Added corresponding SPI methods <TT><A
+    HREF="doc/apidoc/javax/crypto/CipherSpi.html#engineWrap(java.security.Key)">engineWrap(java.security.Key
+    key)</A></TT> and <TT><A HREF="doc/apidoc/javax/crypto/CipherSpi.html#engineUnwrap(byte[], java.lang.String, int)">engineUnwrap(byte[]
+    wrappedKey)</A></TT> in <TT><A HREF="doc/apidoc/javax/crypto/CipherSpi.html">javax.crypto.CipherSpi</A></TT>.
+    <P>
+    <LI><B>Added</B> <TT><A HREF="doc/apidoc/javax/crypto/Cipher.html#init(int, java.security.cert.Certificate)">init(int
+    opmode, java.security.cert.Certificate certificate)</A></TT>
+    and <TT><A HREF="doc/apidoc/javax/crypto/Cipher.html#init(int, java.security.cert.Certificate, java.security.SecureRandom)">init(int
+    opmode, java.security.cert.Certificate certificate, java.security.SecureRandom
+    random)</A></TT> methods to <TT><A HREF="doc/apidoc/javax/crypto/Cipher.html">javax.crypto.Cipher</A></TT>,
+    which enable a Cipher to be initialized from a key within a certificate
+    (rather than from a key directly), and which may enforce key
+    usage control.&nbsp;
+    <P><B>Justification</B>: Customer request.
+    <P><LI><B>Added</B> <TT><A HREF="doc/apidoc/javax/crypto/CipherSpi.html#engineGetKeySize(java.security.Key)">engineGetKeySize(java.security.Key
+    key)</A></TT> in <TT><A HREF="doc/apidoc/javax/crypto/CipherSpi.html">javax.crypto.CipherSpi</A></TT>,
+    which returns the size of the given key.&nbsp;
+    <P><B>Justification</B>: To enforce jurisdiction policies, the
+    JCE needs to know the key size. The <TT><A HREF="doc/apidoc/javax/crypto/CipherSpi.html">CipherSpi</A></TT>
+    class is the best place to add this method. Note: This is a protected
+    SPI method. There is no corresponding API method.
+    <P><B>Note for CSPs</B>: This method must be overridden by the
+    CSP if the CSP may be exported to a country whose government
+    mandates cryptographic restrictions. For such a country, a JCE
+    1.2.2 framework vendor may create a download bundle that includes
+    jurisdiction policy files that specify required cryptographic
+    restrictions. Users in that country could download the bundle,
+    and the JCE 1.2.2 framework will enforce the specified restrictions.
+    Such enforcement requires calls to <TT>engineGetKeySize</TT>.
+  </OL>
+</OL>
+
+<P>&nbsp;</P>
+
+<P><HR ALIGN=LEFT><BR>
+</P>
+
+<P><CENTER><A HREF="CHANGES.html">CHANGES</A>
+| <A HREF="README">README</A> | <A HREF="LICENSE">LICENSE
+|</A> <A HREF="COPYRIGHT.html">COPYRIGHT</A> <BR>
+<A HREF="INSTALL.html">INSTALL</A> | <A HREF="FAQ.html">FAQ</A>
+| <A HREF="KNOWNBUGS.html">KNOWN BUGS</A> | 
+<A HREF="http://java.sun.com/cgi-bin/bugreport.cgi">SUBMIT BUGS</A></CENTER></P>
+
+<P><TABLE WIDTH="100%" BORDER="0" CELLSPACING="2" CELLPADDING="0">
+  <TR>
+    <TD WIDTH="50%">
+    <P>&nbsp;</P>
+
+    <P><FONT SIZE="-2">Unless otherwise licensed, code in all<BR>
+    technical manuals herein (including articles,<BR>
+    FAQs, samples) is provided under this License.</FONT></TD> 
+    <TD WIDTH="50%">
+    <P ALIGN=RIGHT><IMG SRC="images/v3_sun_logo.gif" WIDTH="64" 
+    HEIGHT="28" ALIGN="BOTTOM" BORDER="0" NATURALSIZEFLAG="3"><BR>
+    <FONT SIZE="-2">Copyright &COPY; 1995-2002 <A HREF="http://www.sun.com/">Sun
+    Microsystems, Inc</A>.<BR>
+    All Rights Reserved. <A HREF="http://www.sun.com/share/text/termsofuse.html">Terms
+    of Use</A>. <A HREF="http://www.sun.com/privacy/">Privacy Policy</A>.</FONT></TD> 
+  </TR>
+</TABLE>
+
+</BODY>
+</HTML>
+
+
+
