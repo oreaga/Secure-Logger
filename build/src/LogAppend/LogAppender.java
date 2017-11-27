@@ -289,10 +289,10 @@ public class LogAppender {
         currStamp = Integer.parseInt(prevFields[1]);
         if (prevFields[geIndex].equals(ge)) {
             currRoom = prevFields[3];
-            if (prevFields[2].equals("A") && prevFields[3].equals("0")) {
+            if (prevFields[2].equals("A") && prevFields[3].equals("-1")) {
                 inGallery = true;
             }
-            else if (prevFields[2].equals("L") && prevFields[3].equals("0")) {
+            else if (prevFields[2].equals("L") && prevFields[3].equals("-1")) {
                 inGallery = false;
             }
             else if (prevFields[2].equals("A")) {
@@ -328,10 +328,10 @@ public class LogAppender {
 
             // Update employee/guest state
             if (currFields[geIndex].equals(ge)) {
-                if (currFields[2].equals("A") && currFields[3].equals("0")) {
+                if (currFields[2].equals("A") && currFields[3].equals("-1")) {
                     inGallery = true;
                 }
-                else if (currFields[2].equals("L") && currFields[3].equals("0")) {
+                else if (currFields[2].equals("L") && currFields[3].equals("-1")) {
                     inGallery = false;
                 }
                 else if (currFields[2].equals("A")) {
@@ -350,10 +350,10 @@ public class LogAppender {
         }
 
         // Check that record to be appended is consistent with state
-        if ((stamp > currStamp) && ((inGallery == false && newRoom.equals("0") && al.equals("A")) ||
-            (inGallery == true && free == true && al == "A" && !(newRoom.equals("0"))) ||
+        if ((stamp > currStamp) && ((inGallery == false && newRoom.equals("-1") && al.equals("A")) ||
+            (inGallery == true && free == true && al == "A" && !(newRoom.equals("-1"))) ||
             (inGallery == true && free == false && al == "L" && newRoom.equals(currRoom)) ||
-            (inGallery == true && free == true && al == "L" && newRoom.equals("0")))
+            (inGallery == true && free == true && al == "L" && newRoom.equals("-1")))
             ) {
 
             valid = true;
@@ -369,7 +369,7 @@ public class LogAppender {
     private boolean checkValidInitial() {
         boolean valid = false;
 
-        if (values.get("room") == "0" && values.get("arrival") == "A") {
+        if (values.get("room") == "-1" && values.get("arrival") == "A") {
             valid = true;
         }
 

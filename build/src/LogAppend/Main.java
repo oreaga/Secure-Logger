@@ -81,7 +81,7 @@ public class Main {
             System.exit(255);
         }
         if (m.get("room") == null) {
-            m.put("room", "0");
+            m.put("room", "-1");
         }
 
         // Search command line for A or L
