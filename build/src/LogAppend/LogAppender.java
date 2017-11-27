@@ -349,6 +349,9 @@ public class LogAppender {
             i++;
         }
 
+        //Update prevFields
+        prevFields = prevLine.split(",");
+
         // Check that record to be appended is consistent with state
         if ((stamp > currStamp) && ((inGallery == false && newRoom.equals("-1") && al.equals("A")) ||
             (inGallery == true && free == true && al == "A" && !(newRoom.equals("-1"))) ||
