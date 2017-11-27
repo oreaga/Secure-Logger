@@ -285,21 +285,21 @@ public class LogAppender {
         }
 
         // Initialize employee/guest state
-        currFields = prevLine.split(",");
-        if (currFields[geIndex].equals(ge)) {
-            currStamp = Integer.parseInt(currFields[1]);
-            currRoom = currFields[3];
-            if (currFields[2].equals("A") && currFields[3].equals("0")) {
+        prevFields = prevLine.split(",");
+        if (prevFields[geIndex].equals(ge)) {
+            currStamp = Integer.parseInt(prevFields[1]);
+            currRoom = prevFields[3];
+            if (prevFields[2].equals("A") && prevFields[3].equals("0")) {
                 inGallery = true;
             }
-            else if (currFields[2].equals("L") && currFields[3].equals("0")) {
+            else if (prevFields[2].equals("L") && prevFields[3].equals("0")) {
                 inGallery = false;
             }
-            else if (currFields[2].equals("A")) {
+            else if (prevFields[2].equals("A")) {
                 free = false;
-                currRoom = currFields[3];
+                currRoom = prevFields[3];
             }
-            else if (currFields[2].equals("L")) {
+            else if (prevFields[2].equals("L")) {
                 free = true;
                 currRoom = "0";
             }
