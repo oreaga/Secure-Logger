@@ -284,6 +284,27 @@ public class LogAppender {
             }
         }
 
+        // Initialize employee/guest state
+        currFields = prevLine.split(",");
+        if (currFields[geIndex].equals(ge)) {
+            currStamp = Integer.parseInt(currFields[1]);
+            currRoom = currFields[3];
+            if (currFields[2].equals("A") && currFields[3].equals("0")) {
+                inGallery = true;
+            }
+            else if (currFields[2].equals("L") && currFields[3].equals("0")) {
+                inGallery = false;
+            }
+            else if (currFields[2].equals("A")) {
+                free = false;
+                currRoom = currFields[3];
+            }
+            else if (currFields[2].equals("L")) {
+                free = true;
+                currRoom = "0";
+            }
+        }
+
         while ((currLine = br.readLine()) != null) {
             prevFields = prevLine.split(",");
             currFields = currLine.split(",");
@@ -329,10 +350,10 @@ public class LogAppender {
         }
 
         // Check that record to be appended is consistent with state
-        if ((stamp > currStamp) && (inGallery == false && newRoom.equals("0") && al.equals("A")) ||
+        if ((stamp > currStamp) && ((inGallery == false && newRoom.equals("0") && al.equals("A")) ||
             (inGallery == true && free == true && al == "A" && !(newRoom.equals("0"))) ||
             (inGallery == true && free == false && al == "L" && newRoom.equals(currRoom)) ||
-            (inGallery == true && free == true && al == "L" && newRoom.equals("0"))
+            (inGallery == true && free == true && al == "L" && newRoom.equals("0")))
             ) {
 
             valid = true;

@@ -76,6 +76,13 @@ public class Main {
                 error = error + m.processRoom(args[i + 1]);
             }
         }
+        if (m.get("token") == null || m.get("timestamp") == null) {
+            System.out.println("Please supply a token and a timestamp");
+            System.exit(255);
+        }
+        if (m.get("room") == null) {
+            m.put("room", "0");
+        }
 
         // Search command line for A or L
         for (i = 0; i < args.length; i++) {
