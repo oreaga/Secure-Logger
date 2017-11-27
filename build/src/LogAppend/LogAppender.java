@@ -420,7 +420,7 @@ public class LogAppender {
     private static void createLog(String log, String hash) {
         FileWriter fw = null;
         try {
-            fw = new FileWriter("hashes.txt");
+            fw = new FileWriter("hashes.txt", true);
         }
         catch (IOException e) {
             System.out.println("Error opening file hashes.txt");
