@@ -29,13 +29,6 @@ public class Main {
             System.exit(255);
         }
         executeCommand(values);
-
-        // Debugging
-        // for (Map.Entry<String, String> entry : values.entrySet()) {
-        //     String key = entry.getKey();
-        //     Object value = entry.getValue();
-        //     System.out.println(key + " " + value);
-        // }
     }
 
     private static void invalid() {
@@ -51,7 +44,8 @@ public class Main {
         } else if (values.get("-T") != null) {
         	printTotalTime(values);
         } else {
-            System.out.println("-S -R or -T should be specified"); //Debug
+            // System.out.println("-S -R or -T should be specified"); //Debug
+        	invalid();
         }
     }
 
@@ -62,12 +56,14 @@ public class Main {
         HashMap<String, Integer> employees = new HashMap<String, Integer>();
         HashMap<String, Integer> guests = new HashMap<String, Integer>();
         TreeMap<Integer, ArrayList<String>> rooms = new TreeMap<Integer, ArrayList<String>>();
-        String recordID;
+        String currRecordID;
+        String prevRecordID = "";
         String timestamp;
         String arriveOrLeave;
         String roomID;
         String guestName;
         String employeeName;
+        int lineNum = 1;
 
         String logText = getLogText(values);
         String logTextTrimmed = logText.trim();
@@ -77,14 +73,23 @@ public class Main {
             // System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
             if (record.length < 6) {
-                System.out.println("Error: Logfile line has less than 6 fields"); // Debug
+                // System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
+            currRecordID = record[0];
             timestamp = record[1];
             arriveOrLeave = record[2];
             roomID = record[3];
             guestName = record[4];
             employeeName = record[5];
+            
+            if (lineNum == 1) {
+            	checkHash(lineNum, values.get("logfile"), currRecordID);
+            } else {
+            	checkHash(lineNum, prevRecordID, currRecordID);
+            }
+            
+            prevRecordID = currRecordID;
 
             // System.out.println("guestName: " + guestName); // Debug
             // System.out.println("employeeName: " + employeeName); // Debug
@@ -103,7 +108,7 @@ public class Main {
                     // employee has left the gallery
                     employees.remove(employeeName);
                 } else {
-                    System.out.println("Every line should either have either A or L"); // Debug
+                    // System.out.println("Every line should either have either A or L"); // Debug
                     invalid();    
                 }
             } else if (!guestName.equals("") && employeeName.equals("null")) {
@@ -120,13 +125,15 @@ public class Main {
                     // guest has left the gallery
                     guests.remove(guestName);
                 } else {
-                    System.out.println("Every line should either have either A or L"); // Debug
+                    // System.out.println("Every line should either have either A or L"); // Debug
                     invalid();    
                 }
             } else {
-                System.out.println("Every line should either have an employee or guest name"); // Debug
+                // System.out.println("Every line should either have an employee or guest name"); // Debug
                 invalid();
             }
+            
+            lineNum++;
         }
 
         // sort and print employee names
@@ -211,12 +218,14 @@ public class Main {
     	ArrayList<Integer> roomsEntered = new ArrayList<Integer>();
     	String name = "";
     	boolean isEmployee = true; // must initialize but will always get changed
-    	String recordID;
+    	String currRecordID;
+    	String prevRecordID = "";
         String timestamp;
         String arriveOrLeave;
         String roomID;
         String guestName;
         String employeeName;
+        int lineNum = 1;
     	
     	if (values.get("-E") == null && values.get("-G") != null) {
     		name = values.get("-G");
@@ -225,7 +234,7 @@ public class Main {
     		name = values.get("-E");
     		isEmployee = true;
     	} else {
-    		System.out.println("-E or -G must be specified along with -R");
+    		// System.out.println("-E or -G must be specified along with -R");
     		invalid();
     	}
     	
@@ -237,14 +246,24 @@ public class Main {
         	// System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
             if (record.length < 6) {
-                System.out.println("Error: Logfile line has less than 6 fields"); // Debug
+                // System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
+            currRecordID = record[0];
             timestamp = record[1];
             arriveOrLeave = record[2];
             roomID = record[3];
             guestName = record[4];
             employeeName = record[5];
+            
+            if (lineNum == 1) {
+            	checkHash(lineNum, values.get("logfile"), currRecordID);
+            } else {
+            	checkHash(lineNum, prevRecordID, currRecordID);
+            }
+            
+            prevRecordID = currRecordID;
+            lineNum++;
             
             if (isEmployee && employeeName.equals(name) &&
             	!roomID.equals("null") && !roomID.equals("-1") && 
@@ -272,12 +291,14 @@ public class Main {
     }
     
     private static void printTotalTime(HashMap<String, String> values) {
-    	String recordID;
+    	String currRecordID;
+    	String prevRecordID = "";
         String timestamp;
         String arriveOrLeave;
         String roomID;
         String guestName;
         String employeeName;
+        int lineNum = 1;
         
         String name = "";
     	boolean isEmployee = true; // must initialize but will always get changed
@@ -293,7 +314,7 @@ public class Main {
     		name = values.get("-E");
     		isEmployee = true;
     	} else {
-    		System.out.println("-E or -G must be specified along with -R");
+    		// System.out.println("-E or -G must be specified along with -R");
     		invalid();
     	}
         
@@ -307,14 +328,24 @@ public class Main {
         	// System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
             if (record.length < 6) {
-                System.out.println("Error: Logfile line has less than 6 fields"); // Debug
+                // System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
+            currRecordID = record[0];
             timestamp = record[1];
             arriveOrLeave = record[2];
             roomID = record[3];
             guestName = record[4];
             employeeName = record[5];
+            
+            if (lineNum == 1) {
+            	checkHash(lineNum, values.get("logfile"), currRecordID);
+            } else {
+            	checkHash(lineNum, prevRecordID, currRecordID);
+            }
+            
+            prevRecordID = currRecordID;
+            lineNum++;
             
             // check for isEmployee is necessary because what if there is an
             // employee and guest with the same name
@@ -326,7 +357,7 @@ public class Main {
 							timeEntered = Integer.parseInt(timestamp);
 							inGallery = true;
 						} else {
-							System.out.println("Timestamp should not be null"); //Debug
+							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
             		} else if (arriveOrLeave.equals("L")) {
@@ -335,11 +366,11 @@ public class Main {
 							totalTime += (timeLeft - timeEntered);
 							inGallery = false;
 						} else {
-							System.out.println("Timestamp should not be null"); //Debug
+							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
             		} else {
-            			System.out.println("A or L are the only valid choices"); // Debug
+            			// System.out.println("A or L are the only valid choices"); // Debug
             			invalid();
             		}
             	}
@@ -351,7 +382,7 @@ public class Main {
 							timeEntered = Integer.parseInt(timestamp);
 							inGallery = true;
 						} else {
-							System.out.println("Timestamp should not be null"); //Debug
+							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
 					} else if (arriveOrLeave.equals("L")) {
@@ -360,11 +391,11 @@ public class Main {
 							totalTime += (timeLeft - timeEntered);
 							inGallery = false;
 						} else {
-							System.out.println("Timestamp should not be null"); //Debug
+							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
 					} else {
-						System.out.println("A or L are the only valid choices"); // Debug
+						// System.out.println("A or L are the only valid choices"); // Debug
 						invalid();
 					}
 				}
@@ -378,7 +409,7 @@ public class Main {
             			totalTime += (mostRecentTime - timeEntered);
             		}
             	} else {
-            		System.out.println("Timestamp should not be null"); //Debug
+            		// System.out.println("Timestamp should not be null"); //Debug
             		invalid();
             	}
             }
@@ -554,10 +585,19 @@ public class Main {
 
 
     /****** Encryption Stuff *********/
+    
+    private static void checkHash(Integer lineNum, String prevHash, String currHash) {
+        String num = lineNum.toString();
+        if (!(BCrypt.checkpw(num + prevHash, currHash))) {
+            System.out.println("integrity violation");
+            System.exit(255);
+        }
+    }
 
 
     private static String getLogText(HashMap<String, String> values) {
         FileInputStream fs = null;
+        String foundHash = "";
         byte[] encText = null;
         String plainText = null;
         String path = values.get("logfile");
@@ -567,7 +607,27 @@ public class Main {
             fs.read(encText);
         }
         catch (Exception e) {
-            System.out.println("Unable to open logfile to get text");
+            // System.out.println("Unable to open logfile to get text");
+        	invalid();
+        }
+        
+        byte[] toHash = Arrays.copyOfRange(encText, (encText.length - 10), encText.length);
+        String lastTenToString = new String(toHash);
+        
+        BufferedReader br = null;
+        FileReader fr = null;
+
+        try {
+            fr = new FileReader(values.get("logfile") + ".hash");
+            br = new BufferedReader(fr);
+
+            foundHash = br.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        if (!(BCrypt.checkpw(lastTenToString, foundHash))) {
+            System.out.println("integrity violation");
             System.exit(255);
         }
 
@@ -584,16 +644,18 @@ public class Main {
             fs = new FileInputStream(logfile + ".key");
         }
         catch (FileNotFoundException e) {
-            System.out.println("Could not find key file");
-            System.exit(255);
+            // System.out.println("Could not find key file");
+            // System.exit(255);
+        	invalid();
         }
 
         try {
             fs.read(key);
         }
         catch (IOException e) {
-            System.out.println("Could not read key file");
-            System.exit(255);
+//            System.out.println("Could not read key file");
+//            System.exit(255);
+        	invalid();
         }
         return key;
     }
@@ -607,16 +669,18 @@ public class Main {
             fs = new FileInputStream(logfile + ".iv");
         }
         catch (FileNotFoundException e) {
-            System.out.println("Could not find iv file");
-            System.exit(255);
+            // System.out.println("Could not find iv file");
+            // System.exit(255);
+        	invalid();
         }
 
         try {
             fs.read(iv);
         }
         catch (IOException e) {
-            System.out.println("Could not read iv file");
-            System.exit(255);
+//            System.out.println("Could not read iv file");
+//            System.exit(255);
+        	invalid();
         }
         return iv;
     }
@@ -628,7 +692,8 @@ public class Main {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         }
         catch (Exception e) {
-            System.out.println("Could not create cipher for decryption");
+//            System.out.println("Could not create cipher for decryption");
+        	invalid();
         }
         byte[] key = getKey(path);
         byte[] iv = getIV(path);
@@ -638,8 +703,9 @@ public class Main {
             cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
         }
         catch (Exception e) {
-            System.out.println("Invalid parameters for decryption");
-            System.exit(255);
+//            System.out.println("Invalid parameters for decryption");
+//            System.exit(255);
+        	invalid();
         }
         byte[] decrypted = null;
 
@@ -647,8 +713,9 @@ public class Main {
             decrypted = cipher.doFinal(encMessage);
         }
         catch (Exception e) {
-            System.out.println("Bad block size for decryption");
-            System.exit(255);
+//            System.out.println("Bad block size for decryption");
+//            System.exit(255);
+        	invalid();
         }
         retString = new String(decrypted);
         return retString;
