@@ -21,6 +21,9 @@ public class ArgParser {
         // If one not provided fail with 255
         System.out.println("Getting name");
         for (i = 0; i < args.length; i++) {
+            if (args[i].equals("-B")) {
+                error++;
+            }
             if (args[i].equals("-E")) {
                 error = error + m.processEmployee(args[i + 1]);
             }
@@ -30,7 +33,7 @@ public class ArgParser {
         }
         if (m.get("guest") == null && m.get("employee") == null) {
             System.out.println("Please provide employee or guest name");
-            System.exit(255);
+            error++;
         }
 
         for (i = 0; i < args.length; i++) {
@@ -100,5 +103,7 @@ public class ArgParser {
                 System.exit(255);
             }
         }
+
+    return 0;
     }
 }
