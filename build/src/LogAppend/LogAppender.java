@@ -56,12 +56,10 @@ public class LogAppender {
     // Method for checking time constraints
     public int processTime(String time) {
         Integer t = 0;
-        System.out.println("Checking the time");
         try {
             t = Integer.parseInt(time);
         }
         catch (Exception e) {
-            System.out.println("Error parsing integer time");
             return 1;
         }
         if (t < 1 || t > 1073741823) {
@@ -110,13 +108,11 @@ public class LogAppender {
     }
 
     public int processRoom(String r) {
-        System.out.println("Checking Room");
         Integer room = -1;
         try {
             room = Integer.parseInt(r);
         }
         catch (Exception e) {
-            System.out.println("Error parsing integer room");
             return 1;
         }
 
@@ -164,7 +160,6 @@ public class LogAppender {
 
         // Ensure that log has been decrypted
         if (logText == null) {
-            System.out.println("No plaintext to check for validity");
             return null;
         }
         else {
@@ -175,7 +170,6 @@ public class LogAppender {
                 prevLine = br.readLine();
             }
             catch (IOException e) {
-                System.out.println("Error reading first line of file");
             }
         }
 
@@ -215,10 +209,8 @@ public class LogAppender {
                 currStamp = Integer.parseInt(currFields[1]);
             }
             catch (Exception e) {
-                System.out.println("Error parsing timestamps for validity");
             }
             if (!(currStamp > prevStamp)) {
-                System.out.println("Invalid timestamp: Not Incrementing");
                 return null;
             }
 
@@ -278,7 +270,6 @@ public class LogAppender {
     private int checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
         if (!(BCrypt.checkpw(num + prevHash, currHash))) {
-            System.out.println("Hashes do not match, log modified illegally");
             return 255;
         }
         return 0;
@@ -298,7 +289,6 @@ public class LogAppender {
             buf = new BufferedReader(in);
         }
         catch (FileNotFoundException e) {
-            System.out.println("Could not open hashes.txt to check token");
             buf = null;
         }
 
@@ -308,19 +298,15 @@ public class LogAppender {
                     fields = text.split(":");
 
                     if (values.get("path").equals(fields[0])) {
-                        System.out.println("Found the right log file");
 
                         if (BCrypt.checkpw(values.get("token"), fields[1])) {
-                            System.out.println("Hashes match");
                             return 1;
                         } else {
-                            System.out.println("Hashes do not match");
                             return -1;
                         }
                     }
                 }
             } catch (IOException e) {
-                System.out.println("Error reading from hash file");
             }
         }
 
@@ -333,7 +319,6 @@ public class LogAppender {
             fw = new FileWriter("hashes.txt", true);
         }
         catch (IOException e) {
-            System.out.println("Error opening file hashes.txt");
         }
 
         try {
@@ -341,7 +326,6 @@ public class LogAppender {
             fw.close();
         }
         catch (IOException e) {
-            System.out.println("Could not write to hash file");
         }
     }
 
@@ -355,7 +339,6 @@ public class LogAppender {
             keygen = KeyGenerator.getInstance("AES");
         }
         catch (NoSuchAlgorithmException e) {
-            System.out.println("Failure at keygen");
         }
         keygen.init(128);
         byte[] key = keygen.generateKey().getEncoded();
@@ -368,7 +351,6 @@ public class LogAppender {
             fsIV = new FileOutputStream(logfile + ".iv");
         }
         catch (FileNotFoundException e) {
-            System.out.println("Could not find key or iv file");
         }
 
         try {
@@ -376,7 +358,6 @@ public class LogAppender {
             fsIV.write(iv);
         }
         catch (IOException e) {
-            System.out.println("Could not write to key or iv file");
         }
     }
 
@@ -389,14 +370,12 @@ public class LogAppender {
             fs = new FileInputStream(logfile + ".key");
         }
         catch (FileNotFoundException e) {
-            System.out.println("Could not find key file");
         }
 
         try {
             fs.read(key);
         }
         catch (IOException e) {
-            System.out.println("Could not read key file");
         }
         return key;
     }
@@ -410,14 +389,12 @@ public class LogAppender {
             fs = new FileInputStream(logfile + ".iv");
         }
         catch (FileNotFoundException e) {
-            System.out.println("Could not find iv file");
         }
 
         try {
             fs.read(iv);
         }
         catch (IOException e) {
-            System.out.println("Could not read iv file");
         }
         return iv;
     }
@@ -428,7 +405,6 @@ public class LogAppender {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         }
         catch (Exception e) {
-            System.out.println("No support for padding in encrypt");
         }
         byte[] key = getKey(path);
         byte[] iv = getIV(path);
@@ -438,7 +414,6 @@ public class LogAppender {
             cipher.init(cipher.ENCRYPT_MODE, skeySpec, ivSpec);
         }
         catch (Exception e) {
-            System.out.println("Invalid parameters for encryption");
         }
         byte[] encrypted = new byte[cipher.getOutputSize(message.getBytes().length)];
 
@@ -446,7 +421,6 @@ public class LogAppender {
             encrypted = cipher.doFinal(message.getBytes());
         }
         catch (Exception e) {
-            System.out.println("Bad block size for encryption");
         }
         return encrypted;
     }
@@ -458,7 +432,6 @@ public class LogAppender {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         }
         catch (Exception e) {
-            System.out.println("Could not create cipher for decryption");
         }
         byte[] key = getKey(path);
         byte[] iv = getIV(path);
@@ -468,7 +441,6 @@ public class LogAppender {
             cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
         }
         catch (Exception e) {
-            System.out.println("Invalid parameters for decryption");
         }
         byte[] decrypted = null;
 
@@ -476,7 +448,6 @@ public class LogAppender {
             decrypted = cipher.doFinal(encMessage);
         }
         catch (Exception e) {
-            System.out.println("Bad block size for decryption");
         }
         retString = new String(decrypted);
         return retString;
@@ -493,7 +464,6 @@ public class LogAppender {
             fs.read(encText);
         }
         catch (Exception e) {
-            System.out.println("Unable to open logfile to get text");
         }
 
         plainText = decrypt(encText, path);
@@ -501,7 +471,8 @@ public class LogAppender {
     }
 
     public int appendToLog() {
-        FileOutputStream fw = null;
+        FileOutputStream fs = null;
+        FileWriter fw = null;
         String vars;
         String encVars;
         String recID;
@@ -513,11 +484,9 @@ public class LogAppender {
         byte[] byteText;
 
         if (checkTok == -1) {
-            System.out.println("Invalid token");
             return 255;
         }
         else if (checkTok == 0) {
-            System.out.println("Creating new log");
             createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
             createKey(path);
             newLog = true;
@@ -529,16 +498,13 @@ public class LogAppender {
                 validText = checkValid();
             }
             catch (IOException e) {
-                System.out.println("IO error while checking log validity");
             }
             if (validText == null) {
-                System.out.println("Record not consistent with log state");
                 return 255;
             }
         }
         else {
             if (!checkValidInitial()) {
-                System.out.println("Invalid initial record");
                 return 255;
             }
             logText = "";
@@ -551,10 +517,6 @@ public class LogAppender {
         }
 
 
-
-        // ********** TODO ********
-        // Figure out a good way to implement the record-id,
-        // incrementing integers might not be great
         if (newLog) {
             recID =  "1" + path;
         }
@@ -564,16 +526,25 @@ public class LogAppender {
         vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
         byteText = encrypt(logText, path);
+        byte[] lastTen = Arrays.copyOfRange(byteText, byteText.length - 10, byteText.length);
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
         try {
-            fw = new FileOutputStream(path);
+            fw = new FileWriter(logfile + ".hash");
+            fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
+            fw.close();
+        }
+        catch (Exception e) {}
+        try {
+            fs = new FileOutputStream(path);
         }
         catch (IOException e) {
 
         }
 
         try {
-            fw.write(byteText);
-            fw.close();
+            fs.write(byteText);
+            fs.close();
         }
         catch (IOException e) {
 

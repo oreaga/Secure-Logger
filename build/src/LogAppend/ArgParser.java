@@ -31,35 +31,35 @@ public class ArgParser {
                 if (!checkIndex(i, args.length)) {
                     return 255;
                 }
-                error = error + m.processEmployee(args[i + 1]);
+                error = error + m.processEmployee(args[i]);
             }
             else if (args[i].equals("-G")) {
                 i++;
                 if (!checkIndex(i, args.length)) {
                     return 255;
                 }
-                error = error + m.processGuest(args[i + 1]);
+                error = error + m.processGuest(args[i]);
             }
             else if (args[i].equals("-T")) {
                 i++;
                 if (!checkIndex(i, args.length)) {
                     return 255;
                 }
-                error = error + m.processTime(args[i + 1]);
+                error = error + m.processTime(args[i]);
             }
             else if (args[i].equals("-K")) {
                 i++;
                 if (!checkIndex(i, args.length)) {
                     return 255;
                 }
-                error = error + m.processToken(args[i + 1]);
+                error = error + m.processToken(args[i]);
             }
             else if (args[i].equals("-R")) {
                 i++;
                 if (!checkIndex(i, args.length)) {
                     return 255;
                 }
-                error = error + m.processRoom(args[i + 1]);
+                error = error + m.processRoom(args[i]);
             }
             else if (args[i].equals("-A")) {
                 m.setArrive(true);
