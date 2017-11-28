@@ -49,9 +49,9 @@ public class Main {
         if (values.get("-S") != null) {
             printCurrentState(values);
         } else if (values.get("-R") != null) {
-            // listRoomsEntered(values);
+            listRoomsEntered(values);
         } else if (values.get("-T") != null) {
-            // printTotalTime(values);
+        	printTotalTime(values);
         } else {
             System.out.println("-S -R or -T should be specified"); //Debug
         }
@@ -73,9 +73,8 @@ public class Main {
 
         String logText = getLogText(values);
         String logTextTrimmed = logText.trim();
-        System.out.println(logText); // Debug
+        // System.out.println(logText); // Debug
         String[] lines = logTextTrimmed.split("\n");
-        int x = 1;
         for (String line : lines) {
             // System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
@@ -92,7 +91,6 @@ public class Main {
             // System.out.println("guestName: " + guestName); // Debug
             // System.out.println("employeeName: " + employeeName); // Debug
 
-            // will an absence of a field be null or empty string??
             if (guestName.equals("null") && !employeeName.equals("null")) {
                 if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
                     // employee entered a room
@@ -210,6 +208,196 @@ public class Main {
 
         return 0;
     }
+    
+    private static void listRoomsEntered(HashMap<String, String> values) {
+    	ArrayList<Integer> roomsEntered = new ArrayList<Integer>();
+    	String name = "";
+    	boolean isEmployee = true; // must initialize but will always get changed
+    	String recordID;
+        String timestamp;
+        String arriveOrLeave;
+        String roomID;
+        String guestName;
+        String employeeName;
+    	
+    	if (values.get("-E") == null && values.get("-G") != null) {
+    		name = values.get("-G");
+    		isEmployee = false;
+    	} else if (values.get("-E") != null && values.get("-G") == null) {
+    		name = values.get("-E");
+    		isEmployee = true;
+    	} else {
+    		System.out.println("-E or -G must be specified along with -R");
+    		invalid();
+    	}
+    	
+    	String logText = getLogText(values);
+        String logTextTrimmed = logText.trim();
+        // System.out.println(logText); // Debug
+        String[] lines = logTextTrimmed.split("\n");
+        for (String line : lines) {
+        	// System.out.println("Line: " + line); // Debug
+            String[] record = line.split(",");
+            if (record.length < 6) {
+                System.out.println("Error: Logfile line has less than 6 fields"); // Debug
+                invalid();
+            }
+            timestamp = record[1];
+            arriveOrLeave = record[2];
+            roomID = record[3];
+            guestName = record[4];
+            employeeName = record[5];
+            
+            if (isEmployee && employeeName.equals(name) &&
+            	!roomID.equals("null") && !roomID.equals("-1") && 
+            	arriveOrLeave.equals("A")) {
+            	roomsEntered.add(Integer.parseInt(roomID));
+            } else if (!isEmployee && guestName.equals(name) && 
+            		   !roomID.equals("null") && !roomID.equals("-1") && 
+            		   arriveOrLeave.equals("A")) {
+            	roomsEntered.add(Integer.parseInt(roomID));
+            }
+        }
+        
+        
+        // print results
+        int count = 1;
+        int size = roomsEntered.size();
+        for (Integer i : roomsEntered) {
+        	if (count < size) {
+                System.out.print(i + ",");
+            } else {
+                System.out.print(i + "\n");
+            }
+            count++;
+        }
+    }
+    
+    private static void printTotalTime(HashMap<String, String> values) {
+    	String recordID;
+        String timestamp;
+        String arriveOrLeave;
+        String roomID;
+        String guestName;
+        String employeeName;
+        
+        String name = "";
+    	boolean isEmployee = true; // must initialize but will always get changed
+        boolean inGallery = false;
+        int timeEntered = 0;
+        int timeLeft = 0;
+        int totalTime = 0;
+        
+        if (values.get("-E") == null && values.get("-G") != null) {
+    		name = values.get("-G");
+    		isEmployee = false;
+    	} else if (values.get("-E") != null && values.get("-G") == null) {
+    		name = values.get("-E");
+    		isEmployee = true;
+    	} else {
+    		System.out.println("-E or -G must be specified along with -R");
+    		invalid();
+    	}
+        
+        String logText = getLogText(values);
+        String logTextTrimmed = logText.trim();
+        // System.out.println(logText); // Debug
+        String[] lines = logTextTrimmed.split("\n");
+        int numOfLogs = lines.length;
+        int i = 1;
+        for (String line : lines) {
+        	// System.out.println("Line: " + line); // Debug
+            String[] record = line.split(",");
+            if (record.length < 6) {
+                System.out.println("Error: Logfile line has less than 6 fields"); // Debug
+                invalid();
+            }
+            timestamp = record[1];
+            arriveOrLeave = record[2];
+            roomID = record[3];
+            guestName = record[4];
+            employeeName = record[5];
+            
+            // check for isEmployee is necessary because what if there is an
+            // employee and guest with the same name
+            if (isEmployee && employeeName.equals(name)) {
+            	// Employee arriving at the gallery
+            	if (roomID.equals("-1")) {
+            		if (arriveOrLeave.equals("A")) {
+            			if (!timestamp.equals("null")) {
+                    		timeEntered = Integer.parseInt(timestamp);
+                    		inGallery = true;
+                    	} else {
+                    		System.out.println("Timestamp should not be null"); //Debug
+                    		invalid();
+                    	}
+            		} else if (arriveOrLeave.equals("L")) {
+            			if (!timestamp.equals("null")) {
+                    		timeLeft = Integer.parseInt(timestamp);
+                    		totalTime += (timeLeft - timeEntered);
+                    		inGallery = false;
+                    	} else {
+                    		System.out.println("Timestamp should not be null"); //Debug
+                    		invalid();
+                    	}
+            		} else {
+            			System.out.println("A or L are the only valid choices"); // Debug
+            			invalid();
+            		}
+            	}
+            } else if (!isEmployee && guestName.equals(name)) {
+            	// Guest arriving at the gallery
+            	if (roomID.equals("-1")) {
+            		if (arriveOrLeave.equals("A")) {
+            			if (!timestamp.equals("null")) {
+                    		timeEntered = Integer.parseInt(timestamp);
+                    		inGallery = true;
+                    	} else {
+                    		System.out.println("Timestamp should not be null"); //Debug
+                    		invalid();
+                    	}
+            		} else if (arriveOrLeave.equals("L")) {
+						if (!timestamp.equals("null")) {
+							timeLeft = Integer.parseInt(timestamp);
+							totalTime += (timeLeft - timeEntered);
+							inGallery = false;
+						} else {
+							System.out.println("Timestamp should not be null"); //Debug
+							invalid();
+						}
+            		} else {
+            			System.out.println("A or L are the only valid choices"); // Debug
+            			invalid();
+            		}
+            	}
+            }
+            
+            // we've got to the last log
+            if (i == numOfLogs) {
+            	if (!timestamp.equals("null")) {
+            		int mostRecentTime = Integer.parseInt(timestamp);
+            		if (inGallery) {
+            			totalTime += (mostRecentTime - timeEntered);
+            		}
+            	} else {
+            		System.out.println("Timestamp should not be null"); //Debug
+            		invalid();
+            	}
+            }
+            
+            i++;
+        }
+        
+        // print results
+        if (totalTime > 0) {
+        	System.out.println(totalTime);
+        // case where logread -T gets called when the only record of the employee
+        // or guest is the most recent. Their time in the gallery will be 0
+        // but they are actually present not just unfound
+        } else if (inGallery && totalTime == 0) {
+        	System.out.println(totalTime);
+        }
+    }
 
     private static boolean checkToken(HashMap<String, String> values) {
         String token = values.get("-K");
@@ -232,7 +420,7 @@ public class Main {
                 if (foundLogfile.equals(currentLogfile)) {
                     // System.out.println("Found: " + foundLogfile + " Current: " + currentLogfile); // Debug
                     if (BCrypt.checkpw(token, hash)) {
-                        System.out.println("Match");
+                        // System.out.println("Match"); //Debug
                         result = true;
                     }
                 }
@@ -240,7 +428,6 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // check against hashes.txt for specified logfile
         return result;
     }
 
