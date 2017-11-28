@@ -290,6 +290,44 @@ public class LogAppender {
     // Checks the supplied token to determine whether it is correct for the log
     // file specified.
     // Returns 1 if correct, 0 if logfile doesn't exist, and -1 if incorrect
+
+    private int checkToken() {
+        FileReader in = null;
+        BufferedReader buf = null;
+        String[] fields;
+        String text = null;
+
+        try {
+            in = new FileReader("hashes.txt");
+            buf = new BufferedReader(in);
+        }
+        catch (FileNotFoundException e) {
+            buf = null;
+        }
+
+        if (buf != null) {
+            try {
+                while ((text = buf.readLine()) != null) {
+                    fields = text.split(":");
+
+                    if (values.get("path").equals(fields[0])) {
+
+                        if (BCrypt.checkpw(values.get("token"), fields[1])) {
+                            return 1;
+                        } else {
+                            return -1;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+            }
+        }
+
+        return 0;
+    }
+
+
+    /*
     private int checkToken() {
         FileReader in = null;
         BufferedReader buf = null;
@@ -333,6 +371,7 @@ public class LogAppender {
 
         return 0;
     }
+    */
 
     /*
     private static void createLog(String log, String hash) {
@@ -605,7 +644,7 @@ public class LogAppender {
         try {
             fw = new FileWriter(logfile + ".hash");
             // fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
-            fw.write(new Integer(new String(lastTen).hashCode()).toString());
+            fw.write((new Integer(new String(lastTen).hashCode())).toString());
             fw.close();
         }
         catch (Exception e) {}
