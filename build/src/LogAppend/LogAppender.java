@@ -373,7 +373,7 @@ public class LogAppender {
     }
     */
 
-    /*
+
     private static void createLog(String log, String hash) {
         FileWriter fw = null;
         try {
@@ -389,8 +389,9 @@ public class LogAppender {
         catch (IOException e) {
         }
     }
-    */
 
+
+    /*
     private static void createLog(String log, String tok) {
         FileWriter fw = null;
         MessageDigest md = null;
@@ -415,6 +416,7 @@ public class LogAppender {
         catch (IOException e) {
         }
     }
+    */
 
     private static void createKey(String path) {
         FileOutputStream fsKey = null;
@@ -596,8 +598,8 @@ public class LogAppender {
             return 255;
         }
         else if (checkTok == 0) {
-            //createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
-            createLog(path, token);
+            createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
+            //createLog(path, token);
             createKey(path);
             createIV(path);
             newLog = true;
