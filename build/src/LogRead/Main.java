@@ -452,11 +452,11 @@ public class Main {
 
                 if (foundLogfile.equals(currentLogfile)) {
                     // System.out.println("Found: " + foundLogfile + " Current: " + currentLogfile); // Debug
-//                    if (BCrypt.checkpw(token, hash)) {
-//                        // System.out.println("Match"); //Debug
-//                        result = true;
-//                    }
-                	
+                    if (BCrypt.checkpw(token, hash)) {
+                        // System.out.println("Match"); //Debug
+                        result = true;
+                    }
+                	/*
                 	MessageDigest md = null;
                 	try {
                 		md = MessageDigest.getInstance("SHA-1");
@@ -470,6 +470,7 @@ public class Main {
                     if (tokenDigestStr.equals(hash)) {
                     	result = true;
                     }
+                    */
                 }
             }
         } catch (IOException e) {
