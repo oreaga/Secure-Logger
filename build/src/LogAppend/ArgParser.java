@@ -106,7 +106,7 @@ public class ArgParser {
                 return 255;
             }
             else {
-                System.out.print("invalid");
+                System.out.print("invalidasdlifoaindfho");
                 System.exit(255);
             }
         }
@@ -119,7 +119,7 @@ public class ArgParser {
                 return 255;
             }
             else {
-                System.out.print("invalid");
+                System.out.print("invalidaldnofinadsnf");
                 System.exit(255);
             }
         }
