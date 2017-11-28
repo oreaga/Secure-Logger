@@ -79,6 +79,9 @@ public class ArgParser {
         if (m.get("token") == null || m.get("timestamp") == null) {
             error++;
         }
+        if (m.get("path") == null) {
+            error++;
+        }
         if (m.get("room") == null) {
             m.put("room", "-1");
         }

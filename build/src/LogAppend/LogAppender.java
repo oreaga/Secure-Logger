@@ -198,10 +198,11 @@ public class LogAppender {
             prevFields = prevLine.split(",");
             currFields = currLine.split(",");
 
-            // Ensure log has not been modified
+            /* Ensure log has not been modified
             if (checkHash(i, prevFields[0], currFields[0]) != 0) {
                 return null;
             }
+            */
 
             // Ensure timestamp is being incremented
             try {
@@ -251,7 +252,7 @@ public class LogAppender {
         }
 
         if (valid) {
-            retString = i.toString() + prevFields[0];
+            retString = i.toString(); //+ prevFields[0];
         }
 
         return retString;
@@ -533,12 +534,12 @@ public class LogAppender {
 
 
         if (newLog) {
-            recID =  "1" + path;
+            recID =  "1"; //+ path;
         }
         else {
             recID = validText;
         }
-        vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
+        vars = /*BCrypt.hashpw(recID, BCrypt.gensalt(12))*/ recID + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
         createIV(path);
         byteText = encrypt(logText, path);
