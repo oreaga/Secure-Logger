@@ -1,2 +1,3 @@
+src/LogRead/Main$1.class
 src/LogRead/Main.class
 org/mindrot/jbcrypt/BCrypt.class

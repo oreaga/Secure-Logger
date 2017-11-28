@@ -1,3 +1,4 @@
+src/LogAppend/ArgParser.class
 src/LogAppend/Main.class
 src/LogAppend/LogAppender.class
 org/mindrot/jbcrypt/BCrypt.class
