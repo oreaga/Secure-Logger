@@ -83,12 +83,12 @@ public class Main {
             guestName = record[4];
             employeeName = record[5];
             
-            // slowdown
-//            if (lineNum == 1) {
-//            	checkHash(lineNum, values.get("logfile"), currRecordID);
-//            } else {
-//            	checkHash(lineNum, prevRecordID, currRecordID);
-//            }
+            // had been causing a slow down when using jBcrypt
+            if (lineNum == 1) {
+            	checkHash(lineNum, values.get("logfile"), currRecordID);
+            } else {
+            	checkHash(lineNum, prevRecordID, currRecordID);
+            }
             
             prevRecordID = currRecordID;
 
@@ -151,7 +151,7 @@ public class Main {
                 }
             }
         }
-        Collections.sort(employeeNames); // TODO check that this orders according to ASCII (like in Oracle)
+        Collections.sort(employeeNames);
         int count = 1;
         int size = employeeNames.size();
         for (String s : employeeNames) {
@@ -177,12 +177,7 @@ public class Main {
                 }
             }
         }
-        Collections.sort(guestNames, new Comparator<String>() { // If the above orders properly then switch this too
-            @Override
-            public int compare(String s1, String s2) {
-                return s1.compareToIgnoreCase(s2);
-            }
-        });
+        Collections.sort(guestNames);
         count = 1;
         size = guestNames.size();
         for (String s : guestNames) {
@@ -257,12 +252,11 @@ public class Main {
             guestName = record[4];
             employeeName = record[5];
             
-            // slowdown
-//            if (lineNum == 1) {
-//            	checkHash(lineNum, values.get("logfile"), currRecordID);
-//            } else {
-//            	checkHash(lineNum, prevRecordID, currRecordID);
-//            }
+            if (lineNum == 1) {
+            	checkHash(lineNum, values.get("logfile"), currRecordID);
+            } else {
+            	checkHash(lineNum, prevRecordID, currRecordID);
+            }
             
             prevRecordID = currRecordID;
             lineNum++;
@@ -340,12 +334,11 @@ public class Main {
             guestName = record[4];
             employeeName = record[5];
             
-            // slowdown
-//            if (lineNum == 1) {
-//            	checkHash(lineNum, values.get("logfile"), currRecordID);
-//            } else {
-//            	checkHash(lineNum, prevRecordID, currRecordID);
-//            }
+            if (lineNum == 1) {
+            	checkHash(lineNum, values.get("logfile"), currRecordID);
+            } else {
+            	checkHash(lineNum, prevRecordID, currRecordID);
+            }
             
             prevRecordID = currRecordID;
             lineNum++;
@@ -607,9 +600,10 @@ public class Main {
     
     private static void checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
-        if (!(BCrypt.checkpw(num + prevHash, currHash))) {
-            System.out.println("integrity violation");
-            System.exit(255);
+        String toCompare = (new Integer ((num + prevHash).hashCode())).toString();
+        if (!toCompare.equals(currHash)) {
+        	System.out.println("integrity violation");
+        	System.exit(255);
         }
     }
 
@@ -630,8 +624,7 @@ public class Main {
         	invalid();
         }
         
-        byte[] toHash = Arrays.copyOfRange(encText, (encText.length - 10), encText.length);
-        String lastTenToString = new String(toHash);
+        String encTextStr = new String(encText);
         // System.out.println(lastTenToString.hashCode()); // Debug
         
         BufferedReader br = null;
@@ -646,12 +639,7 @@ public class Main {
             e.printStackTrace();
         }
         
-        // trying to get rid of BCrypt since it's deliberately slow
-//        if (!(BCrypt.checkpw(lastTenToString, foundHash))) {
-//            System.out.println("integrity violation");
-//            System.exit(255);
-//        }
-        if (lastTenToString.hashCode() != Integer.parseInt(foundHash)) {
+        if (encTextStr.hashCode() != Integer.parseInt(foundHash)) {
         	System.out.println("integrity violation");
         	System.exit(255);
         }
