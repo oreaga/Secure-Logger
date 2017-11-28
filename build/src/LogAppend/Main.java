@@ -13,7 +13,6 @@ public class Main {
 
 
     public static void main(String [] args) {
-        System.exit(255);
         FileReader fr = null;
         BufferedReader br = null;
         String path = null;

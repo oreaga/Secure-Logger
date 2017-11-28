@@ -521,6 +521,19 @@ public class LogAppender {
         return plainText;
     }
 
+    /*
+    private String hashRecordID(String recID) {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+        } catch (Exception e) {}
+
+        md.update(recID);
+        byte[] bytes = md.digest();
+        String byteString = new String(bytes);
+    }
+    */
+
     public int appendToLog() {
         FileOutputStream fs = null;
         FileWriter fw = null;
