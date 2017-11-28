@@ -83,11 +83,12 @@ public class Main {
             guestName = record[4];
             employeeName = record[5];
             
-            if (lineNum == 1) {
-            	checkHash(lineNum, values.get("logfile"), currRecordID);
-            } else {
-            	checkHash(lineNum, prevRecordID, currRecordID);
-            }
+            // slowdown
+//            if (lineNum == 1) {
+//            	checkHash(lineNum, values.get("logfile"), currRecordID);
+//            } else {
+//            	checkHash(lineNum, prevRecordID, currRecordID);
+//            }
             
             prevRecordID = currRecordID;
 
@@ -256,11 +257,12 @@ public class Main {
             guestName = record[4];
             employeeName = record[5];
             
-            if (lineNum == 1) {
-            	checkHash(lineNum, values.get("logfile"), currRecordID);
-            } else {
-            	checkHash(lineNum, prevRecordID, currRecordID);
-            }
+            // slowdown
+//            if (lineNum == 1) {
+//            	checkHash(lineNum, values.get("logfile"), currRecordID);
+//            } else {
+//            	checkHash(lineNum, prevRecordID, currRecordID);
+//            }
             
             prevRecordID = currRecordID;
             lineNum++;
@@ -338,11 +340,12 @@ public class Main {
             guestName = record[4];
             employeeName = record[5];
             
-            if (lineNum == 1) {
-            	checkHash(lineNum, values.get("logfile"), currRecordID);
-            } else {
-            	checkHash(lineNum, prevRecordID, currRecordID);
-            }
+            // slowdown
+//            if (lineNum == 1) {
+//            	checkHash(lineNum, values.get("logfile"), currRecordID);
+//            } else {
+//            	checkHash(lineNum, prevRecordID, currRecordID);
+//            }
             
             prevRecordID = currRecordID;
             lineNum++;
