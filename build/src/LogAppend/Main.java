@@ -23,7 +23,7 @@ public class Main {
             if (args[i].equals("-B")) {
                 i++;
                 if (i > args.length) {
-                    System.out.println("Invalid");
+                    System.out.print("invalid");
                     System.exit(255);
                 }
                 path = args[i];
@@ -36,7 +36,6 @@ public class Main {
                 br = new BufferedReader(fr);
                 while ((command = br.readLine()) != null) {
                     commandArgs = command.split(" ");
-                    commandArgs = Arrays.copyOfRange(commandArgs, 1, commandArgs.length);
                     ArgParser.parseArgs(commandArgs, true);
                 }
             }
