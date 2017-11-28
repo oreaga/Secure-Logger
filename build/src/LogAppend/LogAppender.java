@@ -331,7 +331,6 @@ public class LogAppender {
 
     private static void createKey(String path) {
         FileOutputStream fsKey = null;
-        FileOutputStream fsIV = null;
         KeyGenerator keygen = null;
         String[] pathFields = path.split("/");
         String logfile = pathFields[pathFields.length - 1];
@@ -342,19 +341,34 @@ public class LogAppender {
         }
         keygen.init(128);
         byte[] key = keygen.generateKey().getEncoded();
-        byte[] iv = new byte[16];
-        SecureRandom secRandom = new SecureRandom();
-        secRandom.nextBytes(iv);
 
         try {
             fsKey = new FileOutputStream(logfile + ".key");
-            fsIV = new FileOutputStream(logfile + ".iv");
         }
         catch (FileNotFoundException e) {
         }
 
         try {
             fsKey.write(key);
+        }
+        catch (IOException e) {
+        }
+    }
+
+    private static void createIV(String path) {
+        FileOutputStream fsIV = null;
+        String[] pathFields = path.split("/");
+        String logfile = pathFields[pathFields.length - 1];
+        byte[] iv = new byte[16];
+        SecureRandom secRandom = new SecureRandom();
+        secRandom.nextBytes(iv);
+        try {
+            fsIV = new FileOutputStream(logfile + ".iv");
+        }
+        catch (FileNotFoundException e) {
+        }
+
+        try {
             fsIV.write(iv);
         }
         catch (IOException e) {
@@ -489,6 +503,7 @@ public class LogAppender {
         else if (checkTok == 0) {
             createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
             createKey(path);
+            createIV(path);
             newLog = true;
         }
 
@@ -525,6 +540,7 @@ public class LogAppender {
         }
         vars = BCrypt.hashpw(recID, BCrypt.gensalt(12)) + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
+        createIV(path);
         byteText = encrypt(logText, path);
         byte[] lastTen = Arrays.copyOfRange(byteText, byteText.length - 10, byteText.length);
         String[] pathFields = path.split("/");
