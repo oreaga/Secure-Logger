@@ -36,7 +36,6 @@ public class Main {
                 }
             }
             catch (Exception e) {
-                System.out.println("Error opening or reading from batch file");
             }
         }
         else {

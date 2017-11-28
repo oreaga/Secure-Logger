@@ -568,7 +568,7 @@ public class LogAppender {
             fw = new FileOutputStream(path);
         }
         catch (IOException e) {
-            System.out.println("Error opening log");
+
         }
 
         try {
@@ -576,7 +576,7 @@ public class LogAppender {
             fw.close();
         }
         catch (IOException e) {
-            System.out.println("Error appending to log");
+
         }
 
         return 0;
