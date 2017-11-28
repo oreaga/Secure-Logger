@@ -276,6 +276,17 @@ public class LogAppender {
         return 0;
     }
 
+    /*
+    private int checkHash(Integer lineNum, String prevHash, String currHash) {
+        String num = lineNum.toString();
+        String checkHash = (new Integer((num + prevHash).hashCode()).toString();
+        if (!checkHash.equals(currHash)) {
+            return 255;
+        }
+        return 0;
+    }
+     */
+
     // Checks the supplied token to determine whether it is correct for the log
     // file specified.
     // Returns 1 if correct, 0 if logfile doesn't exist, and -1 if incorrect
@@ -523,14 +534,9 @@ public class LogAppender {
 
     /*
     private String hashRecordID(String recID) {
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("SHA-1");
-        } catch (Exception e) {}
-
-        md.update(recID);
-        byte[] bytes = md.digest();
-        String byteString = new String(bytes);
+        Integer hCode = recID.hashCode();
+        retString = hCode.toString();
+        return retString;
     }
     */
 
@@ -599,7 +605,7 @@ public class LogAppender {
         try {
             fw = new FileWriter(logfile + ".hash");
             // fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
-            fw.write(new String(lastTen).hashCode());
+            fw.write(new Integer(new String(lastTen).hashCode()).toString());
             fw.close();
         }
         catch (Exception e) {}
