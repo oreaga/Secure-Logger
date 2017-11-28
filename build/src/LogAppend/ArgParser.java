@@ -1,77 +1,13 @@
-// A basic hello world program
 package src.LogAppend;
-import java.security.*;
-import javax.crypto.*;
-import javax.crypto.spec.*;
-import java.util.*;
-import java.io.*;
-import org.mindrot.jbcrypt.BCrypt;
 
-public class Main {
+public class ArgParser {
 
-    public void Main() {}
+    public ArgParser() {}
 
-
-    public static void main(String [] args) {
-        FileReader fr = null;
-        BufferedReader br = null;
-        String path = null;
-        String command = null;
-        String[] commandArgs = null;
-
-        for (int i = 0; i < args.length; i++) {
-            if (args[i] == "-B") {
-                path = args[args.length - 1];
-            }
-        }
-
-        if (path != null) {
-            try {
-                fr = new FileReader(path);
-                br = new BufferedReader(fr);
-                while ((command = br.readLine()) != null) {
-                    commandArgs = command.split(" ");
-                    commandArgs = Arrays.copyOfRange(commandArgs, 1, commandArgs.length);
-                    ArgParser.parseArgs(commandArgs, true);
-                }
-            }
-            catch (Exception e) {
-                System.out.println("Error opening or reading from batch file");
-            }
-        }
-        else {
-            ArgParser.parseArgs(args, false);
-        }
-
-
-
-        /*
-        FileWriter fw = null;
-        InputStream is = null;
-        InputStreamReader fr = null;
-        BufferedReader br = null;
-        byte[] b = null;
-        String enc = null;
-        String r = null;
-        try {
-            fw = new FileWriter("test-read.txt");
-            fr = new InputStreamReader(is);
-            br = new BufferedReader(fr);
-        }
-        catch (Exception e) {}
-        Main m = new Main();
-        enc = Main.encrypt("Fuck this", "test-log.txt");
-
-        try {fw.write(enc);} catch (Exception e) {}
-        try{r = br.readLine();} catch (Exception e) {}
-
-        String dec = Main.decrypt(r, "test-log.txt");
-        System.out.println(dec);
-
+    public static int parseArgs(String[] args, boolean isBatch) {
         LogAppender m = new LogAppender();
         int i;
         int error = 0;
-        int validToken = -1;
 
         if (args.length < 2) {
             System.out.println("Please supply arguments to program");
@@ -142,10 +78,27 @@ public class Main {
         }
 
         if (error != 0) {
-            System.exit(255);
+            if (isBatch == true) {
+                System.out.println("Invalid");
+                return 255;
+            }
+            else {
+                System.out.println("Invalid");
+                System.exit(255);
+            }
         }
 
-        m.appendToLog();
-        */
+        error = m.appendToLog();
+
+        if (error != 0) {
+            if (isBatch == true) {
+                System.out.println("Invalid");
+                return 255;
+            }
+            else {
+                System.out.println("Invalid");
+                System.exit(255);
+            }
+        }
     }
 }

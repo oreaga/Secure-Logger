@@ -12,6 +12,7 @@ public class LogAppender {
     private String logText;
     private boolean arrive;
     private boolean leave;
+    private boolean batch;
 
     public LogAppender() {
         values = new HashMap<String, String>();
@@ -61,7 +62,7 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Error parsing integer time");
-            System.exit(255);
+            return 1;
         }
         if (t < 1 || t > 1073741823) {
             return 1;
@@ -108,112 +109,6 @@ public class LogAppender {
         return 0;
     }
 
-/*
-    private String getLastLine(String path) {
-        FileReader fr;
-        BufferedReader br;
-        String test;
-        String p = values.get("path");
-        String recLine = null;
-        if (p == null) {
-            System.out.println("Path not supplied to commandline");
-            System.exit(255);
-        }
-
-        try {
-            fr = new FileReader(p);
-            br = new BufferedReader(fr);
-        }
-        catch (IOException e) {
-            System.out.println("No prior arrivals");
-            return null;
-        }
-
-        try {
-            while ((test = br.readLine()) != null) {
-                recLine = test;
-            }
-        }
-        catch (IOException e) {
-            System.out.println("Error reading last line of log");
-            System.exit(255);
-        }
-
-        return recLine;
-    }
-*/
-
-    /*
-    private int checkArrival(String a) {
-        FileReader fr;
-        BufferedReader br;
-        String last = null;
-        String prevRec = null;
-        String decRec = null;
-        String[] recFields = null;
-        String[] fields = null;
-        boolean entGallery = false;
-        boolean left = true;
-        boolean guest = false;
-        int index = -1;
-
-        if (values.get("guest") != null) {
-            guest = true;
-            index = 4;
-        }
-        else {
-            index = 3;
-        }
-
-
-
-        if (path == null) {
-            System.out.println("Path not supplied to commandline");
-            System.exit(255);
-        }
-
-        try {
-            fr = new FileReader(path);
-            br = new BufferedReader(fr);
-        }
-        catch (IOException e) {
-            System.out.println("No prior arrivals");
-            return 0;
-        }
-
-        last = br.readLine();
-        if (last == null) {
-            return 0;
-        }
-        else {
-            decRec = new String(decrypt(last.split(":")[1]));
-            prevHash = decRec.split(",")[0];
-        }
-
-        while ((last = br.readLine()) != null) {
-            fields = last.split(":");
-            currNum = fields[0];
-            decRec = new String(decrypt(fields[1]));
-            recFields = decRec.split(",");
-
-            // Check if the log has been tampered with
-            if (!(BCrypt.checkpw(currNum + prevHash, decRec.split(",")[0]))) {
-                System.out.println("Invalid log state, record hashes don't match");
-                System.exit(255);
-            }
-
-            // Check for info about current guest/employee
-            if (recFields[index] == values.get(""))
-        }
-
-        return 0;
-    }
-
-    private int checkLeave() {
-        return 0;
-    }
-    */
-
     public int processRoom(String r) {
         System.out.println("Checking Room");
         Integer room = -1;
@@ -222,7 +117,7 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Error parsing integer room");
-            System.exit(255);
+            return 1;
         }
 
         if (room < 0 || room > 1073741823) {
@@ -270,7 +165,7 @@ public class LogAppender {
         // Ensure that log has been decrypted
         if (logText == null) {
             System.out.println("No plaintext to check for validity");
-            System.exit(255);
+            return null;
         }
         else {
             sr = new StringReader(logText);
@@ -310,7 +205,9 @@ public class LogAppender {
             currFields = currLine.split(",");
 
             // Ensure log has not been modified
-            checkHash(i, prevFields[0], currFields[0]);
+            if (checkHash(i, prevFields[0], currFields[0]) != 0) {
+                return null;
+            }
 
             // Ensure timestamp is being incremented
             try {
@@ -319,11 +216,10 @@ public class LogAppender {
             }
             catch (Exception e) {
                 System.out.println("Error parsing timestamps for validity");
-                System.exit(255);
             }
             if (!(currStamp > prevStamp)) {
                 System.out.println("Invalid timestamp: Not Incrementing");
-                System.exit(255);
+                return null;
             }
 
             // Update employee/guest state
@@ -340,7 +236,7 @@ public class LogAppender {
                 }
                 else if (currFields[2].equals("L")) {
                     free = true;
-                    currRoom = "0";
+                    currRoom = "-1";
                 }
             }
 
@@ -379,12 +275,13 @@ public class LogAppender {
         return valid;
     }
 
-    private void checkHash(Integer lineNum, String prevHash, String currHash) {
+    private int checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
         if (!(BCrypt.checkpw(num + prevHash, currHash))) {
             System.out.println("Hashes do not match, log modified illegally");
-            System.exit(255);
+            return 255;
         }
+        return 0;
     }
 
     // Checks the supplied token to determine whether it is correct for the log
@@ -445,7 +342,6 @@ public class LogAppender {
         }
         catch (IOException e) {
             System.out.println("Could not write to hash file");
-            System.exit(255);
         }
     }
 
@@ -460,7 +356,6 @@ public class LogAppender {
         }
         catch (NoSuchAlgorithmException e) {
             System.out.println("Failure at keygen");
-            System.exit(255);
         }
         keygen.init(128);
         byte[] key = keygen.generateKey().getEncoded();
@@ -474,7 +369,6 @@ public class LogAppender {
         }
         catch (FileNotFoundException e) {
             System.out.println("Could not find key or iv file");
-            System.exit(255);
         }
 
         try {
@@ -496,7 +390,6 @@ public class LogAppender {
         }
         catch (FileNotFoundException e) {
             System.out.println("Could not find key file");
-            System.exit(255);
         }
 
         try {
@@ -504,7 +397,6 @@ public class LogAppender {
         }
         catch (IOException e) {
             System.out.println("Could not read key file");
-            System.exit(255);
         }
         return key;
     }
@@ -519,7 +411,6 @@ public class LogAppender {
         }
         catch (FileNotFoundException e) {
             System.out.println("Could not find iv file");
-            System.exit(255);
         }
 
         try {
@@ -527,7 +418,6 @@ public class LogAppender {
         }
         catch (IOException e) {
             System.out.println("Could not read iv file");
-            System.exit(255);
         }
         return iv;
     }
@@ -539,7 +429,6 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("No support for padding in encrypt");
-            System.exit(255);
         }
         byte[] key = getKey(path);
         byte[] iv = getIV(path);
@@ -550,7 +439,6 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Invalid parameters for encryption");
-            System.exit(255);
         }
         byte[] encrypted = new byte[cipher.getOutputSize(message.getBytes().length)];
 
@@ -559,7 +447,6 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Bad block size for encryption");
-            System.exit(255);
         }
         return encrypted;
     }
@@ -582,7 +469,6 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Invalid parameters for decryption");
-            System.exit(255);
         }
         byte[] decrypted = null;
 
@@ -591,7 +477,6 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Bad block size for decryption");
-            System.exit(255);
         }
         retString = new String(decrypted);
         return retString;
@@ -609,7 +494,6 @@ public class LogAppender {
         }
         catch (Exception e) {
             System.out.println("Unable to open logfile to get text");
-            System.exit(255);
         }
 
         plainText = decrypt(encText, path);
@@ -630,7 +514,7 @@ public class LogAppender {
 
         if (checkTok == -1) {
             System.out.println("Invalid token");
-            System.exit(255);
+            return 255;
         }
         else if (checkTok == 0) {
             System.out.println("Creating new log");
@@ -646,17 +530,16 @@ public class LogAppender {
             }
             catch (IOException e) {
                 System.out.println("IO error while checking log validity");
-                System.exit(255);
             }
             if (validText == null) {
                 System.out.println("Record not consistent with log state");
-                System.exit(255);
+                return 255;
             }
         }
         else {
             if (!checkValidInitial()) {
                 System.out.println("Invalid initial record");
-                System.exit(255);
+                return 255;
             }
             logText = "";
         }
@@ -686,7 +569,6 @@ public class LogAppender {
         }
         catch (IOException e) {
             System.out.println("Error opening log");
-            System.exit(255);
         }
 
         try {
@@ -695,7 +577,6 @@ public class LogAppender {
         }
         catch (IOException e) {
             System.out.println("Error appending to log");
-            System.exit(255);
         }
 
         return 0;
