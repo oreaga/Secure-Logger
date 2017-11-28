@@ -7,8 +7,6 @@ import java.security.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
-// problem with appending to both hashes.txt (overwrites) and 
-// logfile (throws nullpointer exception when validating)
 
 public class Main {
     public static void main(String [] args) {
@@ -324,38 +322,13 @@ public class Main {
             	// Employee arriving at the gallery
             	if (roomID.equals("-1")) {
             		if (arriveOrLeave.equals("A")) {
-            			if (!timestamp.equals("null")) {
-                    		timeEntered = Integer.parseInt(timestamp);
-                    		inGallery = true;
-                    	} else {
-                    		System.out.println("Timestamp should not be null"); //Debug
-                    		invalid();
-                    	}
-            		} else if (arriveOrLeave.equals("L")) {
-            			if (!timestamp.equals("null")) {
-                    		timeLeft = Integer.parseInt(timestamp);
-                    		totalTime += (timeLeft - timeEntered);
-                    		inGallery = false;
-                    	} else {
-                    		System.out.println("Timestamp should not be null"); //Debug
-                    		invalid();
-                    	}
-            		} else {
-            			System.out.println("A or L are the only valid choices"); // Debug
-            			invalid();
-            		}
-            	}
-            } else if (!isEmployee && guestName.equals(name)) {
-            	// Guest arriving at the gallery
-            	if (roomID.equals("-1")) {
-            		if (arriveOrLeave.equals("A")) {
-            			if (!timestamp.equals("null")) {
-                    		timeEntered = Integer.parseInt(timestamp);
-                    		inGallery = true;
-                    	} else {
-                    		System.out.println("Timestamp should not be null"); //Debug
-                    		invalid();
-                    	}
+						if (!timestamp.equals("null")) {
+							timeEntered = Integer.parseInt(timestamp);
+							inGallery = true;
+						} else {
+							System.out.println("Timestamp should not be null"); //Debug
+							invalid();
+						}
             		} else if (arriveOrLeave.equals("L")) {
 						if (!timestamp.equals("null")) {
 							timeLeft = Integer.parseInt(timestamp);
@@ -370,6 +343,31 @@ public class Main {
             			invalid();
             		}
             	}
+            } else if (!isEmployee && guestName.equals(name)) {
+				// Guest arriving at the gallery 
+				if (roomID.equals("-1")) {
+					if (arriveOrLeave.equals("A")) {
+						if (!timestamp.equals("null")) {
+							timeEntered = Integer.parseInt(timestamp);
+							inGallery = true;
+						} else {
+							System.out.println("Timestamp should not be null"); //Debug
+							invalid();
+						}
+					} else if (arriveOrLeave.equals("L")) {
+						if (!timestamp.equals("null")) {
+							timeLeft = Integer.parseInt(timestamp);
+							totalTime += (timeLeft - timeEntered);
+							inGallery = false;
+						} else {
+							System.out.println("Timestamp should not be null"); //Debug
+							invalid();
+						}
+					} else {
+						System.out.println("A or L are the only valid choices"); // Debug
+						invalid();
+					}
+				}
             }
             
             // we've got to the last log
