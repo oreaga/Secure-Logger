@@ -102,11 +102,11 @@ public class ArgParser {
 
         if (error != 0) {
             if (isBatch == true) {
-                System.out.println("Invalid");
+                System.out.print("invalid");
                 return 255;
             }
             else {
-                System.out.println("Invalid");
+                System.out.print("invalid");
                 System.exit(255);
             }
         }
@@ -115,11 +115,11 @@ public class ArgParser {
 
         if (error != 0) {
             if (isBatch == true) {
-                System.out.println("Invalid");
+                System.out.print("invalid");
                 return 255;
             }
             else {
-                System.out.println("Invalid");
+                System.out.print("invalid");
                 System.exit(255);
             }
         }

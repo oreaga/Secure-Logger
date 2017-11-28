@@ -284,6 +284,12 @@ public class LogAppender {
         BufferedReader buf = null;
         String[] fields;
         String text = null;
+        MessageDigest md = null;
+
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+        }
+        catch (Exception e) {}
 
         try {
             in = new FileReader("hashes.txt");
@@ -296,11 +302,14 @@ public class LogAppender {
         if (buf != null) {
             try {
                 while ((text = buf.readLine()) != null) {
-                    fields = text.split(":");
+                    fields = text.split(":", 2);
 
                     if (values.get("path").equals(fields[0])) {
+                        md.update(values.get("token").getBytes());
+                        byte[] bytes = md.digest();
+                        String byteString = new String(bytes);
 
-                        if (BCrypt.checkpw(values.get("token"), fields[1])) {
+                        if (byteString.equals(fields[1])) {
                             return 1;
                         } else {
                             return -1;
@@ -314,8 +323,35 @@ public class LogAppender {
         return 0;
     }
 
+    /*
     private static void createLog(String log, String hash) {
         FileWriter fw = null;
+        try {
+            fw = new FileWriter("hashes.txt", true);
+        }
+        catch (IOException e) {
+        }
+
+        try {
+            fw.write(log + ":" + hash + "\n");
+            fw.close();
+        }
+        catch (IOException e) {
+        }
+    }
+    */
+
+    private static void createLog(String log, String tok) {
+        FileWriter fw = null;
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+        }
+        catch (NoSuchAlgorithmException e) {
+        }
+        md.update(tok.getBytes());
+        byte[] hashBytes = md.digest();
+        String hash = new String(hashBytes);
         try {
             fw = new FileWriter("hashes.txt", true);
         }
@@ -502,7 +538,8 @@ public class LogAppender {
             return 255;
         }
         else if (checkTok == 0) {
-            createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
+            //createLog(path, BCrypt.hashpw(token, BCrypt.gensalt(12)));
+            createLog(path, token);
             createKey(path);
             createIV(path);
             newLog = true;
@@ -548,7 +585,8 @@ public class LogAppender {
         String logfile = pathFields[pathFields.length - 1];
         try {
             fw = new FileWriter(logfile + ".hash");
-            fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
+            // fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
+            fw.write(new String(lastTen).hashCode());
             fw.close();
         }
         catch (Exception e) {}

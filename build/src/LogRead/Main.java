@@ -82,7 +82,7 @@ public class Main {
             roomID = record[3];
             guestName = record[4];
             employeeName = record[5];
-            
+
             if (lineNum == 1) {
             	checkHash(lineNum, values.get("logfile"), currRecordID);
             } else {
@@ -255,7 +255,7 @@ public class Main {
             roomID = record[3];
             guestName = record[4];
             employeeName = record[5];
-            
+
             if (lineNum == 1) {
             	checkHash(lineNum, values.get("logfile"), currRecordID);
             } else {
@@ -337,7 +337,7 @@ public class Main {
             roomID = record[3];
             guestName = record[4];
             employeeName = record[5];
-            
+
             if (lineNum == 1) {
             	checkHash(lineNum, values.get("logfile"), currRecordID);
             } else {
