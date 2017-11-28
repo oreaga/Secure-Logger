@@ -96,16 +96,16 @@ public class Main {
             // System.out.println("employeeName: " + employeeName); // Debug
 
             if (guestName.equals("null") && !employeeName.equals("null")) {
-                if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
+                if (arriveOrLeave.equals("A") && !roomID.equals("-1")) {
                     // employee entered a room
                     employees.put(employeeName, Integer.parseInt(roomID));
-                } else if (arriveOrLeave.equals("A") && roomID.equals("null")) {
+                } else if (arriveOrLeave.equals("A") && roomID.equals("-1")) {
                     // employee entered the gallery but not a specific room
                     employees.put(employeeName, -1);
-                } else if (arriveOrLeave.equals("L") && !roomID.equals("null")) {
+                } else if (arriveOrLeave.equals("L") && !roomID.equals("-1")) {
                     // employee left a room
                     employees.put(employeeName, -1);
-                } else if (arriveOrLeave.equals("L") && roomID.equals("null")) {
+                } else if (arriveOrLeave.equals("L") && roomID.equals("-1")) {
                     // employee has left the gallery
                     employees.remove(employeeName);
                 } else {
@@ -113,16 +113,16 @@ public class Main {
                     invalid();    
                 }
             } else if (!guestName.equals("") && employeeName.equals("null")) {
-                if (arriveOrLeave.equals("A") && !roomID.equals("null")) {
+                if (arriveOrLeave.equals("A") && !roomID.equals("-1")) {
                     // guest entered a room
                     guests.put(guestName, Integer.parseInt(roomID));
-                } else if (arriveOrLeave.equals("A") && roomID.equals("null")) {
+                } else if (arriveOrLeave.equals("A") && roomID.equals("-1")) {
                     // guest entered the gallery but not a specific room
                     guests.put(guestName, -1);
-                } else if (arriveOrLeave.equals("L") && !roomID.equals("null")) {
+                } else if (arriveOrLeave.equals("L") && !roomID.equals("-1")) {
                     // guest left a room
                     guests.put(guestName, -1);
-                } else if (arriveOrLeave.equals("L") && roomID.equals("null")) {
+                } else if (arriveOrLeave.equals("L") && roomID.equals("-1")) {
                     // guest has left the gallery
                     guests.remove(guestName);
                 } else {
@@ -433,6 +433,7 @@ public class Main {
 
     private static boolean checkToken(HashMap<String, String> values) {
         String token = values.get("-K");
+        byte[] tokenBytes = token.getBytes();
         String currentLogfile = values.get("logfile");
         BufferedReader br = null;
         FileReader fr = null;
@@ -451,9 +452,23 @@ public class Main {
 
                 if (foundLogfile.equals(currentLogfile)) {
                     // System.out.println("Found: " + foundLogfile + " Current: " + currentLogfile); // Debug
-                    if (BCrypt.checkpw(token, hash)) {
-                        // System.out.println("Match"); //Debug
-                        result = true;
+//                    if (BCrypt.checkpw(token, hash)) {
+//                        // System.out.println("Match"); //Debug
+//                        result = true;
+//                    }
+                	
+                	MessageDigest md = null;
+                	try {
+                		md = MessageDigest.getInstance("SHA-1");
+                	} catch (Exception e) {
+                		invalid();
+                	}
+
+                    md.update(tokenBytes);
+                    byte[] tokenDigest = md.digest();
+                    String tokenDigestStr = new String(tokenDigest);
+                    if (tokenDigestStr.equals(hash)) {
+                    	result = true;
                     }
                 }
             }
@@ -616,6 +631,7 @@ public class Main {
         
         byte[] toHash = Arrays.copyOfRange(encText, (encText.length - 10), encText.length);
         String lastTenToString = new String(toHash);
+        // System.out.println(lastTenToString.hashCode()); // Debug
         
         BufferedReader br = null;
         FileReader fr = null;
@@ -629,9 +645,14 @@ public class Main {
             e.printStackTrace();
         }
         
-        if (!(BCrypt.checkpw(lastTenToString, foundHash))) {
-            System.out.println("integrity violation");
-            System.exit(255);
+        // trying to get rid of BCrypt since it's deliberately slow
+//        if (!(BCrypt.checkpw(lastTenToString, foundHash))) {
+//            System.out.println("integrity violation");
+//            System.exit(255);
+//        }
+        if (lastTenToString.hashCode() != Integer.parseInt(foundHash)) {
+        	System.out.println("integrity violation");
+        	System.exit(255);
         }
 
         plainText = decrypt(encText, path);
