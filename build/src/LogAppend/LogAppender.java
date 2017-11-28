@@ -198,11 +198,11 @@ public class LogAppender {
             prevFields = prevLine.split(",");
             currFields = currLine.split(",");
 
-            /* Ensure log has not been modified
+            // Ensure log has not been modified
             if (checkHash(i, prevFields[0], currFields[0]) != 0) {
                 return null;
             }
-            */
+
 
             // Ensure timestamp is being incremented
             try {
@@ -252,7 +252,7 @@ public class LogAppender {
         }
 
         if (valid) {
-            retString = i.toString(); //+ prevFields[0];
+            retString = i.toString()+ prevFields[0];
         }
 
         return retString;
@@ -268,6 +268,7 @@ public class LogAppender {
         return valid;
     }
 
+    /*
     private int checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
         if (!(BCrypt.checkpw(num + prevHash, currHash))) {
@@ -275,17 +276,17 @@ public class LogAppender {
         }
         return 0;
     }
+    */
 
-    /*
     private int checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
-        String checkHash = (new Integer((num + prevHash).hashCode()).toString();
-        if (!checkHash.equals(currHash)) {
+        String checkStr = (new Integer((num + prevHash).hashCode()).toString();
+        if (!checkStr.equals(currHash)) {
             return 255;
         }
         return 0;
     }
-     */
+
 
     // Checks the supplied token to determine whether it is correct for the log
     // file specified.
@@ -573,13 +574,6 @@ public class LogAppender {
         return plainText;
     }
 
-    /*
-    private String hashRecordID(String recID) {
-        Integer hCode = recID.hashCode();
-        retString = hCode.toString();
-        return retString;
-    }
-    */
 
     public int appendToLog() {
         FileOutputStream fs = null;
@@ -631,22 +625,24 @@ public class LogAppender {
 
 
         if (newLog) {
-            recID =  "1"; //+ path;
+            recID =  "1"+ path;
         }
         else {
             recID = validText;
         }
-        vars = /*BCrypt.hashpw(recID, BCrypt.gensalt(12))*/ recID + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
+
+        recID = (new Integer(recID.hashCode()).toString();
+        vars =  hashRecordID(recID) + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
         createIV(path);
         byteText = encrypt(logText, path);
-        byte[] lastTen = Arrays.copyOfRange(byteText, byteText.length - 10, byteText.length);
+        // byte[] lastTen = Arrays.copyOfRange(byteText, byteText.length - 10, byteText.length);
         String[] pathFields = path.split("/");
         String logfile = pathFields[pathFields.length - 1];
         try {
             fw = new FileWriter(logfile + ".hash");
             // fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
-            fw.write((new Integer(new String(lastTen).hashCode())).toString());
+            fw.write((new Integer(new String(byteText).hashCode())).toString());
             fw.close();
         }
         catch (Exception e) {}
