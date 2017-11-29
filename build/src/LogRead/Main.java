@@ -11,24 +11,24 @@ import javax.crypto.spec.*;
 public class Main {
     public static void main(String [] args) {
         HashMap<String, String> values = new HashMap<String, String>();
-        values.put("-K", null);
-        values.put("-S", null);
-        values.put("-R", null);
-        values.put("-T", null);
-        values.put("-I", null);
-        values.put("-E", null);
-        values.put("-G", null);
-        values.put("logfile", null);
+        values.put("-K", null); // key
+        values.put("-S", null); // print current state
+        values.put("-R", null); // print rooms visited by a single person
+        values.put("-T", null); // print time spent in gallery by a single person
+        values.put("-I", null); // unimplemented
+        values.put("-E", null); // employee
+        values.put("-G", null); // guest
+        values.put("logfile", null); // path to logfile
         
-        values = readArgs(args, values);
-        if (!isValidArgs(values)) {
+        values = readArgs(args, values); // read command line args into hash map
+        if (!isValidArgs(values)) { // confirm it's a valid command
             invalid();
         }
-        if (!checkToken(values)) {
+        if (!checkToken(values)) { // check provided token against the stored token
             System.out.println("integrity violation");
             System.exit(255);
         }
-        executeCommand(values);
+        executeCommand(values); // do the stuff
     }
 
     private static void invalid() {
@@ -65,15 +65,15 @@ public class Main {
         String employeeName;
         int lineNum = 1;
 
-        String logText = getLogText(values);
+        String logText = getLogText(values); // get decrypted log text
         String logTextTrimmed = logText.trim();
-        // System.out.println(logText); // Debug
         String[] lines = logTextTrimmed.split("\n");
+        
         for (String line : lines) {
-            // System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
+            
+            // confirming that line has appropriate number of fields
             if (record.length < 6) {
-                // System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
             currRecordID = record[0];
@@ -84,16 +84,14 @@ public class Main {
             employeeName = record[5];
             
             // had been causing a slow down when using jBcrypt
+            // now String class' hashCode method is much faster
             if (lineNum == 1) {
             	checkHash(lineNum, values.get("logfile"), currRecordID);
             } else {
             	checkHash(lineNum, prevRecordID, currRecordID);
             }
-            
             prevRecordID = currRecordID;
-
-            // System.out.println("guestName: " + guestName); // Debug
-            // System.out.println("employeeName: " + employeeName); // Debug
+            lineNum++;
 
             if (guestName.equals("null") && !employeeName.equals("null")) {
                 if (arriveOrLeave.equals("A") && !roomID.equals("-1")) {
@@ -109,7 +107,6 @@ public class Main {
                     // employee has left the gallery
                     employees.remove(employeeName);
                 } else {
-                    // System.out.println("Every line should either have either A or L"); // Debug
                     invalid();    
                 }
             } else if (!guestName.equals("") && employeeName.equals("null")) {
@@ -126,15 +123,11 @@ public class Main {
                     // guest has left the gallery
                     guests.remove(guestName);
                 } else {
-                    // System.out.println("Every line should either have either A or L"); // Debug
                     invalid();    
                 }
             } else {
-                // System.out.println("Every line should either have an employee or guest name"); // Debug
                 invalid();
-            }
-            
-            lineNum++;
+            }           
         }
 
         // sort and print employee names
@@ -188,7 +181,8 @@ public class Main {
             }
             count++;
         }
-
+        
+        // print all guests/employees in every room
         for (Map.Entry<Integer, ArrayList<String>> entry : rooms.entrySet()) {
             int room = entry.getKey();
             ArrayList<String> names = entry.getValue();
@@ -230,19 +224,16 @@ public class Main {
     		name = values.get("-E");
     		isEmployee = true;
     	} else {
-    		// System.out.println("-E or -G must be specified along with -R");
     		invalid();
     	}
     	
     	String logText = getLogText(values);
         String logTextTrimmed = logText.trim();
-        // System.out.println(logText); // Debug
         String[] lines = logTextTrimmed.split("\n");
+        
         for (String line : lines) {
-        	// System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
             if (record.length < 6) {
-                // System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
             currRecordID = record[0];
@@ -257,10 +248,10 @@ public class Main {
             } else {
             	checkHash(lineNum, prevRecordID, currRecordID);
             }
-            
             prevRecordID = currRecordID;
             lineNum++;
             
+            // add rooms entered to roomsEntered arraylist
             if (isEmployee && employeeName.equals(name) &&
             	!roomID.equals("null") && !roomID.equals("-1") && 
             	arriveOrLeave.equals("A")) {
@@ -310,21 +301,18 @@ public class Main {
     		name = values.get("-E");
     		isEmployee = true;
     	} else {
-    		// System.out.println("-E or -G must be specified along with -R");
     		invalid();
     	}
         
         String logText = getLogText(values);
         String logTextTrimmed = logText.trim();
-        // System.out.println(logText); // Debug
         String[] lines = logTextTrimmed.split("\n");
+        
         int numOfLogs = lines.length;
         int i = 1;
         for (String line : lines) {
-        	// System.out.println("Line: " + line); // Debug
             String[] record = line.split(",");
             if (record.length < 6) {
-                // System.out.println("Error: Logfile line has less than 6 fields"); // Debug
                 invalid();
             }
             currRecordID = record[0];
@@ -339,7 +327,6 @@ public class Main {
             } else {
             	checkHash(lineNum, prevRecordID, currRecordID);
             }
-            
             prevRecordID = currRecordID;
             lineNum++;
             
@@ -353,7 +340,6 @@ public class Main {
 							timeEntered = Integer.parseInt(timestamp);
 							inGallery = true;
 						} else {
-							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
             		} else if (arriveOrLeave.equals("L")) {
@@ -362,11 +348,9 @@ public class Main {
 							totalTime += (timeLeft - timeEntered);
 							inGallery = false;
 						} else {
-							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
             		} else {
-            			// System.out.println("A or L are the only valid choices"); // Debug
             			invalid();
             		}
             	}
@@ -378,7 +362,6 @@ public class Main {
 							timeEntered = Integer.parseInt(timestamp);
 							inGallery = true;
 						} else {
-							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
 					} else if (arriveOrLeave.equals("L")) {
@@ -387,11 +370,9 @@ public class Main {
 							totalTime += (timeLeft - timeEntered);
 							inGallery = false;
 						} else {
-							// System.out.println("Timestamp should not be null"); //Debug
 							invalid();
 						}
 					} else {
-						// System.out.println("A or L are the only valid choices"); // Debug
 						invalid();
 					}
 				}
@@ -405,7 +386,6 @@ public class Main {
             			totalTime += (mostRecentTime - timeEntered);
             		}
             	} else {
-            		// System.out.println("Timestamp should not be null"); //Debug
             		invalid();
             	}
             }
@@ -424,6 +404,7 @@ public class Main {
         }
     }
 
+    // checks supplied token against stored hash of the token
     private static boolean checkToken(HashMap<String, String> values) {
         String token = values.get("-K");
         byte[] tokenBytes = token.getBytes();
@@ -444,26 +425,9 @@ public class Main {
                 String hash = lineArr[1];
 
                 if (foundLogfile.equals(currentLogfile)) {
-                    // System.out.println("Found: " + foundLogfile + " Current: " + currentLogfile); // Debug
                     if (BCrypt.checkpw(token, hash)) {
-                        // System.out.println("Match"); //Debug
                         result = true;
                     }
-                	/*
-                	MessageDigest md = null;
-                	try {
-                		md = MessageDigest.getInstance("SHA-1");
-                	} catch (Exception e) {
-                		invalid();
-                	}
-
-                    md.update(tokenBytes);
-                    byte[] tokenDigest = md.digest();
-                    String tokenDigestStr = new String(tokenDigest);
-                    if (tokenDigestStr.equals(hash)) {
-                    	result = true;
-                    }
-                    */
                 }
             }
         } catch (IOException e) {
@@ -620,13 +584,10 @@ public class Main {
             fs.read(encText);
         }
         catch (Exception e) {
-            // System.out.println("Unable to open logfile to get text");
         	invalid();
         }
         
         String encTextStr = new String(encText);
-        // System.out.println(lastTenToString.hashCode()); // Debug
-        
         BufferedReader br = null;
         FileReader fr = null;
 
@@ -657,8 +618,6 @@ public class Main {
             fs = new FileInputStream(logfile + ".key");
         }
         catch (FileNotFoundException e) {
-            // System.out.println("Could not find key file");
-            // System.exit(255);
         	invalid();
         }
 
@@ -666,8 +625,6 @@ public class Main {
             fs.read(key);
         }
         catch (IOException e) {
-//            System.out.println("Could not read key file");
-//            System.exit(255);
         	invalid();
         }
         return key;
@@ -682,8 +639,6 @@ public class Main {
             fs = new FileInputStream(logfile + ".iv");
         }
         catch (FileNotFoundException e) {
-            // System.out.println("Could not find iv file");
-            // System.exit(255);
         	invalid();
         }
 
@@ -691,8 +646,6 @@ public class Main {
             fs.read(iv);
         }
         catch (IOException e) {
-//            System.out.println("Could not read iv file");
-//            System.exit(255);
         	invalid();
         }
         return iv;
@@ -705,7 +658,6 @@ public class Main {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         }
         catch (Exception e) {
-//            System.out.println("Could not create cipher for decryption");
         	invalid();
         }
         byte[] key = getKey(path);
@@ -716,8 +668,6 @@ public class Main {
             cipher.init(cipher.DECRYPT_MODE, skeySpec, ivSpec);
         }
         catch (Exception e) {
-//            System.out.println("Invalid parameters for decryption");
-//            System.exit(255);
         	invalid();
         }
         byte[] decrypted = null;
@@ -726,8 +676,6 @@ public class Main {
             decrypted = cipher.doFinal(encMessage);
         }
         catch (Exception e) {
-//            System.out.println("Bad block size for decryption");
-//            System.exit(255);
         	invalid();
         }
         retString = new String(decrypted);
