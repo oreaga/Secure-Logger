@@ -1,7 +1,0 @@
-1.) Adversary prepends new starter with different time, uses this to invalid the rest of the log
-    a.) Use secret key to encrypt logs, only known to owner of log
-2.) Adversary appends record of same format to end of log and has it processed automatically
-    a.) Use feedback from plaintext of previous record and hash with record number to create stream that can't be forged
-3.) Adversary can modify existing record label to make it appear to have occurred at a different time
-    a.) Hash the record label with the feedback so that it can be checked to ensure that the label matches the record
-4.)

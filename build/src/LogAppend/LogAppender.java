@@ -268,16 +268,6 @@ public class LogAppender {
         return valid;
     }
 
-    /*
-    private int checkHash(Integer lineNum, String prevHash, String currHash) {
-        String num = lineNum.toString();
-        if (!(BCrypt.checkpw(num + prevHash, currHash))) {
-            return 255;
-        }
-        return 0;
-    }
-    */
-
     private int checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
         String checkStr = (new Integer((num + prevHash).hashCode())).toString();
@@ -328,53 +318,6 @@ public class LogAppender {
     }
 
 
-    /*
-    private int checkToken() {
-        FileReader in = null;
-        BufferedReader buf = null;
-        String[] fields;
-        String text = null;
-        MessageDigest md = null;
-
-        try {
-            md = MessageDigest.getInstance("SHA-1");
-        }
-        catch (Exception e) {}
-
-        try {
-            in = new FileReader("hashes.txt");
-            buf = new BufferedReader(in);
-        }
-        catch (FileNotFoundException e) {
-            buf = null;
-        }
-
-        if (buf != null) {
-            try {
-                while ((text = buf.readLine()) != null) {
-                    fields = text.split(":", 2);
-
-                    if (values.get("path").equals(fields[0])) {
-                        md.update(values.get("token").getBytes());
-                        byte[] bytes = md.digest();
-                        String byteString = new String(bytes);
-
-                        if (byteString.equals(fields[1])) {
-                            return 1;
-                        } else {
-                            return -1;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-            }
-        }
-
-        return 0;
-    }
-    */
-
-
     private static void createLog(String log, String hash) {
         FileWriter fw = null;
         try {
@@ -391,33 +334,6 @@ public class LogAppender {
         }
     }
 
-
-    /*
-    private static void createLog(String log, String tok) {
-        FileWriter fw = null;
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("SHA-1");
-        }
-        catch (NoSuchAlgorithmException e) {
-        }
-        md.update(tok.getBytes());
-        byte[] hashBytes = md.digest();
-        String hash = new String(hashBytes);
-        try {
-            fw = new FileWriter("hashes.txt", true);
-        }
-        catch (IOException e) {
-        }
-
-        try {
-            fw.write(log + ":" + hash + "\n");
-            fw.close();
-        }
-        catch (IOException e) {
-        }
-    }
-    */
 
     private static void createKey(String path) {
         FileOutputStream fsKey = null;
@@ -531,7 +447,7 @@ public class LogAppender {
 
     private static String decrypt(byte[] encMessage, String path) {
         Cipher cipher = null;
-        String retString = null;
+        String retString;
         try {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         }
@@ -560,7 +476,7 @@ public class LogAppender {
     private String getLogText() {
         FileInputStream fs = null;
         byte[] encText = null;
-        String plainText = null;
+        String plainText;
         String path = values.get("path");
         try {
             fs = new FileInputStream(path);
@@ -579,7 +495,6 @@ public class LogAppender {
         FileOutputStream fs = null;
         FileWriter fw = null;
         String vars;
-        String encVars;
         String recID;
         String token = values.get("token");
         String path = values.get("path");
@@ -636,12 +551,10 @@ public class LogAppender {
         logText = logText + vars;
         createIV(path);
         byteText = encrypt(logText, path);
-        // byte[] lastTen = Arrays.copyOfRange(byteText, byteText.length - 10, byteText.length);
         String[] pathFields = path.split("/");
         String logfile = pathFields[pathFields.length - 1];
         try {
             fw = new FileWriter(logfile + ".hash");
-            // fw.write(BCrypt.hashpw(new String(lastTen), BCrypt.gensalt(12)));
             fw.write((new Integer(new String(byteText).hashCode())).toString());
             fw.close();
         }
