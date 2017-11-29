@@ -280,7 +280,7 @@ public class LogAppender {
 
     private int checkHash(Integer lineNum, String prevHash, String currHash) {
         String num = lineNum.toString();
-        String checkStr = (new Integer((num + prevHash).hashCode()).toString();
+        String checkStr = (new Integer((num + prevHash).hashCode())).toString();
         if (!checkStr.equals(currHash)) {
             return 255;
         }
@@ -631,8 +631,8 @@ public class LogAppender {
             recID = validText;
         }
 
-        recID = (new Integer(recID.hashCode()).toString();
-        vars =  hashRecordID(recID) + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
+        recID = (new Integer(recID.hashCode())).toString();
+        vars =  recID + "," + values.get("timestamp") + "," + values.get("arrival") + "," + values.get("room") + "," +  values.get("guest") + "," + values.get("employee") + "\n";
         logText = logText + vars;
         createIV(path);
         byteText = encrypt(logText, path);
