@@ -1,0 +1,2 @@
+Class-Path: logread /java/[MyLibraryNameGoesHere1].jar /java/[MyLibraryNameGoesHere2].jar
+Main-Class: src.LogRead.Main

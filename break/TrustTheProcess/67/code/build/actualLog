@@ -1,0 +1,10 @@
+Fred,true,-2,true,1
+Jill,false,-2,true,2
+Fred,true,1,true,3
+Jill,false,1,true,4
+Fred,true,-2,false,5
+Fred,true,5,true,6
+Fred,true,-2,false,7
+Fred,true,3,true,8
+Fred,true,-2,false,9
+Fred,true,-12,false,10

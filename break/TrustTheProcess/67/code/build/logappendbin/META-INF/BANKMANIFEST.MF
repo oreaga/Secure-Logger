@@ -1,0 +1,2 @@
+Class-Path: logappend /java/[MyLibraryNameGoesHere1].jar /java/[MyLibraryNameGoesHere2].jar
+Main-Class: src.LogAppend.Main

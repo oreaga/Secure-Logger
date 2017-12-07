@@ -1,0 +1,14 @@
+All source code should go in either:
+-src/LogAppend/
+-src/LogAppend/
+
+Please notify us about libraries you use so that we can install them on the test server.
+
+You may assume that the library is in /java/[LibraryName].jar
+- For local testing you should place it there.
+
+You will need to edit the Makefile to indicate the library dependencies.
+
+You should not need to edit logappend.pre nor logread.pre. They are used by the Makefile to produce executable scripts:
+logread
+logappend
